@@ -116,12 +116,12 @@ ENERGY MINIMISATION
 gmx grompp -f min_sd.mdp -c <protein>_solv.gro -p topol.top -o <protein>_solv_minsd.tpr -maxwarn 1
 gmx mdrun -deffnm <protein>_solv_minsd 
 ```
-ADD IONS
+ADD NaCl 
 ```
 gmx grompp -f ions.mdp -c <protein>_solv_minsd.gro -p topol.top -o <protein>_ions.tpr -maxwarn 1
 gmx genion -s <protein>_ions.tpr -p topol.top -o <protein>_ions.gro -neutral
 ```
-Choose Iontype 
+Choose 13 and press enter
 
 MAKE INDEX FILE
 ```
