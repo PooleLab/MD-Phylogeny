@@ -105,6 +105,8 @@ gmx editconf -f <protein>.gro -o <protein>_box.gro -bt cubic -d 1.2 -c
 ENERGY MINIMISATION
 ```
 gmx grompp -f min_sd.mdp -c <protein>_box.gro -p topol.top -o <protein>_minsd.tpr
+```
+```
 gmx mdrun -deffnm <protein>_minsd
 ```
 ADD WATER TO THE BOX
@@ -114,11 +116,15 @@ gmx solvate -cp <protein>_minsd.gro -cs spc216.gro -p topol.top -o <protein>_sol
 ENERGY MINIMISATION
 ```
 gmx grompp -f min_sd.mdp -c <protein>_solv.gro -p topol.top -o <protein>_solv_minsd.tpr -maxwarn 1
+```
+```
 gmx mdrun -deffnm <protein>_solv_minsd 
 ```
 ADD NaCl 
 ```
 gmx grompp -f ions.mdp -c <protein>_solv_minsd.gro -p topol.top -o <protein>_ions.tpr -maxwarn 1
+```
+```
 gmx genion -s <protein>_ions.tpr -p topol.top -o <protein>_ions.gro -neutral
 ```
 Choose 13 and press enter
@@ -132,37 +138,47 @@ Type 'q' and enter
 ENERGY MINIMISATION
 ```
 gmx grompp -f min_sd.mdp -c <protein>_ions.gro -p topol.top -o <protein>_ions_minsd.tpr -maxwarn 1
+```
+```
 gmx mdrun -deffnm <protein>_ions_minsd
 ```
 INITIALISATION AND HEATING
 ```
 gmx grompp -f charmm-inputs/charmm_nvt_heat.mdp -c <protein>_ions_minsd.gro -r <protein>_ions_minsd.gro -p topol.top -o <protein>_nvt_heat.tpr
+```
+```
 gmx mdrun -deffnm <protein>_nvt_heat
 ```
 
 
 
 ## 3. MD Simulation Run 
+> [!IMPORTANT]
+> The scripts used in this step are adjusted to the set-up done by using CHARMM GUI website. Adjust paths and file names according to how you did the set up.
+> You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top``` and ```equilibration.mdp``` file to do a MD simulation 
 1. Directory Organization: Create a unique directory for each protein and place the ```charmm-gui.tgz``` file inside (as mentioned in 3.2 point 4)
 2. Upload to HPC and extract files: Transfer the folder to the HPC cluster and extract the files. Unzip the CHARMM-GUI setup files in each folder (as mentioned in 3.2 point 4)
 The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
 3. Equilibration:
   - Equilibrate the system to stabilize temperature, pressure, and density.
-  - Run s1_make_equilibration_scripts.py to create Slurm scripts in each GROMACS folder for equilibration. (Note: be aware of changing the directory in the script (line 5) and all SBATCH settings to liking and requirements. Also, change the names of files required for simulation. (line 33 (minimization.mdp, input.gro, index.ndx, topol.top) and 38 (equilibration.mdp) )
+  - Run ```s1_make_equilibration_scripts.py``` to create Slurm scripts in each GROMACS folder for equilibration.
+> [!NOTE]
+> Be aware of changing the directory in the script (line 5) and all SBATCH settings to liking and requirements. Also, change the names of files required for simulation. (line 33 (```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```) and 38 (```equilibration.mdp```) )
   - Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in s2. The email sent when the equilibration started and ended will tell how long the equilibration took, maybe adjust the time as needed.
-  - Execute s2_make_equilibration_execute_script.py to submit all generated equilibration scripts. (Note: Adjust the path in line 3 to your file locations)
+  - Execute ```s2_make_equilibration_execute_script.py``` to submit all generated equilibration scripts.
+> [!NOTE]
+> Adjust the path in line 3 to your file locations
   - Check the trajectories for these parameters for any abnormalities 
 4. Production Run:
   - Perform the production simulation to under stable, equilibrated conditions.
 (If you change dt to 0.002 ps, and you want your simulation to last for 100 ns, then nsteps is 100,000 ps / 0.002 ps = 50,000,000)
-  - The folder structure will be <proteinfoldername>/charmm*/gromacs
-  - Use s3_make_production_scripts.py to create production scripts for each protein.
-  - Submit all production runs with s4_make_production_execute_script.py.
+  - The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
+  - Use ```s3_make_production_scripts.py``` to create production scripts for each protein.
+  - Submit all production runs with ```s4_make_production_execute_script.py```.
   - Adjustments: Set the Slurm array size for efficient job management:
-#SBATCH --array=0-6%1  
-Adjust '6' based on protein size or simulation length
-For a protein from roughly  300 AA 6 has proven to be enough
-  - Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in s3. Check Log Files associated with each job ID to estimate run completion time and adjust time/array accordingly.
+      - ```#SBATCH --array=0-6%1```  Adjust '6' based on protein size or simulation length. For a protein from roughly  300 AA 6 has proven to be enough
+> [!TIP]
+> Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in ```s3```. Check Log Files associated with each job ID to estimate run completion time and adjust time/array accordingly.
 
 
 
