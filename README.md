@@ -114,7 +114,7 @@ gmx solvate -cp <protein>_minsd.gro -cs spc216.gro -p topol.top -o <protein>_sol
 ENERGY MINIMISATION
 ```
 gmx grompp -f min_sd.mdp -c <protein>_solv.gro -p topol.top -o <protein>_solv_minsd.tpr -maxwarn 1
-gmx mdrun -deffnm <protein>_solv_minsd -maxwarn 1
+gmx mdrun -deffnm <protein>_solv_minsd 
 ```
 ADD IONS
 ```
