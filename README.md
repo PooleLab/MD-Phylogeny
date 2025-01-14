@@ -88,26 +88,26 @@ It is recommended to try the simulation setup steps to see which number the forc
 
 
 ### 3. Simulation Run 
-Directory Organization: Create a unique directory for each protein and place the charmm-gui.tgz file inside (as mentioned in 3.2 point 4)
-Upload to HPC and extract files: Transfer the folder to the HPC cluster and extract the files. Unzip the CHARMM-GUI setup files in each folder (as mentioned in 3.2 point 4)
-The folder structure will be <proteinfoldername>/charmm*/gromacs
-Equilibration:
-Equilibrate the system to stabilize temperature, pressure, and density.
-Run s1_make_equilibration_scripts.py to create Slurm scripts in each GROMACS folder for equilibration. (Note: be aware of changing the directory in the script (line 5) and all SBATCH settings to liking and requirements. Also, change the names of files required for simulation. (line 33 (minimization.mdp, input.gro, index.ndx, topol.top) and 38 (equilibration.mdp) )
-Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in s2. The email sent when the equilibration started and ended will tell how long the equilibration took, maybe adjust the time as needed.
-Execute s2_make_equilibration_execute_script.py to submit all generated equilibration scripts. (Note: Adjust the path in line 3 to your file locations)
-Check the trajectories for these parameters for any abnormalities 
-Production Run:
-Perform the production simulation to under stable, equilibrated conditions.
+1. Directory Organization: Create a unique directory for each protein and place the ```charmm-gui.tgz``` file inside (as mentioned in 3.2 point 4)
+2. Upload to HPC and extract files: Transfer the folder to the HPC cluster and extract the files. Unzip the CHARMM-GUI setup files in each folder (as mentioned in 3.2 point 4)
+The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
+3. Equilibration:
+  - Equilibrate the system to stabilize temperature, pressure, and density.
+  - Run s1_make_equilibration_scripts.py to create Slurm scripts in each GROMACS folder for equilibration. (Note: be aware of changing the directory in the script (line 5) and all SBATCH settings to liking and requirements. Also, change the names of files required for simulation. (line 33 (minimization.mdp, input.gro, index.ndx, topol.top) and 38 (equilibration.mdp) )
+  - Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in s2. The email sent when the equilibration started and ended will tell how long the equilibration took, maybe adjust the time as needed.
+  - Execute s2_make_equilibration_execute_script.py to submit all generated equilibration scripts. (Note: Adjust the path in line 3 to your file locations)
+  - Check the trajectories for these parameters for any abnormalities 
+4. Production Run:
+  - Perform the production simulation to under stable, equilibrated conditions.
 (If you change dt to 0.002 ps, and you want your simulation to last for 100 ns, then nsteps is 100,000 ps / 0.002 ps = 50,000,000)
-The folder structure will be <proteinfoldername>/charmm*/gromacs
-Use s3_make_production_scripts.py to create production scripts for each protein.
-Submit all production runs with s4_make_production_execute_script.py.
-Adjustments: Set the Slurm array size for efficient job management:
+  - The folder structure will be <proteinfoldername>/charmm*/gromacs
+  - Use s3_make_production_scripts.py to create production scripts for each protein.
+  - Submit all production runs with s4_make_production_execute_script.py.
+  - Adjustments: Set the Slurm array size for efficient job management:
 #SBATCH --array=0-6%1  
 Adjust '6' based on protein size or simulation length
 For a protein from roughly  300 AA 6 has proven to be enough
-Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in s3. Check Log Files associated with each job ID to estimate run completion time and adjust time/array accordingly.
+  - Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in s3. Check Log Files associated with each job ID to estimate run completion time and adjust time/array accordingly.
 
 
 
@@ -132,27 +132,27 @@ Ensure all .xtc and .gro files for each protein are collected in a folder named 
   - Setup: Place the BS_master_sort.py script outside the Trajectories folder to organize trials and generate the required number of bootstrap samples. This script will select random frames from each trajectory, creating directories with the sampled structures for each trial.
   - Parameter Adjustments:
     - Number of Trials: Define the total number of bootstrap replicates by setting the N_trials variable in BS_master_sort.py. For example:
-    N_trials = 200  # Set to the desired number of bootstrap trials
-    dir_trial = np.arange(0, 200, 1)  # Creates folders for each trial
+    ```N_trials = 200  # Set to the desired number of bootstrap trials```
+    ```dir_trial = np.arange(0, 200, 1)  # Creates folders for each trial```
     This configuration will generate 200 bootstrap trials, each with randomly selected frames.
-    - Frame Selection: Adjust the number of frames per trial based on the length of your MD simulation:frame_sel = np.random.randint(0, 10000, N_trials)  # Modify '10000' to match total frames
+    - Frame Selection: Adjust the number of frames per trial based on the length of your MD simulation: ```frame_sel = np.random.randint(0, 10000, N_trials)  # Modify '10000' to match total frames of your simulation```
 To determine the correct frame count, load the .gro and .xtc files into a viewer like VMD. Once fully loaded, VMD will display the total frame count for the trajectory.
   - Generate Bootstrapping Directories: Running BS_master_sort.py will create a series of directories named trial_0, trial_1, etc., each containing a unique set of frames selected randomly from the original trajectory. 
 3. Run Structural Analysis on Trials:
   - With the trials generated, use GesamtTree.py to analyze each trial folder within the Trajectories/Trials directory. This script will generate phylogenetic trees for each bootstrap replicate.
   - Execution Command:
 This command (```python3 GesamtTree.py Trajectories/Trial/trial_*```) runs GesamtTree.py on each trial directory, producing a phylogenetic tree output for every bootstrap sample.
-Generate a Consensus Phylogenetic Tree and Map Bootstrap Values:
-Once phylogenetic trees have been generated for all bootstrap trials, you can either:
-Create a Majority-Rule Consensus Tree from the bootstrap replicates, which combines all individual trees to identify the most consistent relationships.
-Map Bootstrap Values onto a Reference Tree to reflect the stability of nodes in the reference structure.
-Options:
-Majority-Rule Consensus Tree: This option compiles the bootstrap trial trees into a single consensus tree, with nodes representing relationships that appear in a specified percentage of the bootstrap samples. For example, setting a 60% threshold (-f 0.6) will include only those relationships that appear in at least 60% of the trees.
-sumtrees -s consensus -o consensus60 -f 0.6 -p -d0 Trajectories/Trials/trial_*/*.nex
+4. Generate a Consensus Phylogenetic Tree and Map Bootstrap Values:
+  - Once phylogenetic trees have been generated for all bootstrap trials, you can either:
+    - Create a Majority-Rule Consensus Tree from the bootstrap replicates, which combines all individual trees to identify the most consistent relationships.
+    - Map Bootstrap Values onto a Reference Tree to reflect the stability of nodes in the reference structure.
+  - Options:
+    - Majority-Rule Consensus Tree: This option compiles the bootstrap trial trees into a single consensus tree, with nodes representing relationships that appear in a specified percentage of the bootstrap samples. For example, setting a 60% threshold (```-f 0.6```) will include only those relationships that appear in at least 60% of the trees.
+```sumtrees -s consensus -o consensus60 -f 0.6 -p -d0 Trajectories/Trials/trial_*/*.nex```
 This produces a consensus tree (consensus60) that highlights the most frequent relationships across bootstrap trials.
-Mapping Bootstrap Values onto a Reference Tree: If you have a reference tree from Section 3.1, you can add bootstrap support values directly onto it, rather than generating a separate consensus tree. This approach maps the percentage of bootstrap trees supporting each node directly onto the nodes of the reference tree, indicating the stability of each branch.
-sumtrees -d0 -p -o OutputTree -t ReferenceTree Trajectories/Trials/trial_*/*.nex
-Here:
-OutputTree will contain the reference tree structure with bootstrap values annotated on each node.
-Interpretation: Higher bootstrap values on a node in the reference tree suggest strong support for that relationship across bootstrap replicates, while lower values indicate less stability.
+    - Mapping Bootstrap Values onto a Reference Tree: If you have a reference tree from Section 3.1, you can add bootstrap support values directly onto it, rather than generating a separate consensus tree. This approach maps the percentage of bootstrap trees supporting each node directly onto the nodes of the reference tree, indicating the stability of each branch.
+```sumtrees -d0 -p -o OutputTree -t ReferenceTree Trajectories/Trials/trial_*/*.nex```
+    - Here:
+      - OutputTree will contain the reference tree structure with bootstrap values annotated on each node.
+      - Interpretation: Higher bootstrap values on a node in the reference tree suggest strong support for that relationship across bootstrap replicates, while lower values indicate less stability.
 
