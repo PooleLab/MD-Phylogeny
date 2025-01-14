@@ -155,7 +155,8 @@ gmx mdrun -deffnm <protein>_nvt_heat
 ## 3. MD Simulation Run 
 > [!IMPORTANT]
 > The scripts used in this step are adjusted to the set-up done by using CHARMM GUI website. Adjust paths and file names according to how you did the set up.
-> You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top``` and ```equilibration.mdp``` file to do a MD simulation 
+> You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```, ```equilibration.mdp``` and ```production.mdp``` file to do a MD simulation. There are templates for ```.mdp``` in ```templates``` folder. Adjust to your liking, and make sure you adjust names of the files themselfes or adjust filenames in the scripts.
+
 1. Directory Organization: Create a unique directory for each protein and place the ```charmm-gui.tgz``` file inside (as mentioned in 3.2 point 4)
 2. Upload to HPC and extract files: Transfer the folder to the HPC cluster and extract the files. Unzip the CHARMM-GUI setup files in each folder (as mentioned in 3.2 point 4)
 The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
@@ -170,7 +171,7 @@ The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
 > Adjust the path in line 3 to your file locations
   - Check the trajectories for these parameters for any abnormalities 
 4. Production Run:
-  - Perform the production simulation to under stable, equilibrated conditions.
+  - Perform the production simulation under stable, equilibrated conditions.
 (If you change dt to 0.002 ps, and you want your simulation to last for 100 ns, then nsteps is 100,000 ps / 0.002 ps = 50,000,000)
   - The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
   - Use ```s3_make_production_scripts.py``` to create production scripts for each protein.
