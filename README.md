@@ -8,7 +8,6 @@ Operating system: Ideally, UNIX or Mac. If Windows use Windows Subsystem for Lin
 
 MD Engine (best to use on an HPC): GROMACS (we’ve used GROMACS version GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid) and CHARMM are common choices for protein simulations, each compatible with different force fields (e.g., CHARMM36 for GROMACS what we have used).
 
-
 ## Installations 
 
 Python for script execution, with NumPy, dendropy, Bio, natsort 
@@ -21,36 +20,43 @@ VMD (or Pymol) for structures and simulations
 FigTree or iTOL for phylogenies
 
 
-## Method
+# Method
 
-### 1. Create structural phylogeny
+## 1. Create structural phylogeny
 
 - Folder and file setup: Create a main directory containing necessary scripts and a subdirectory specifically for PDB files.
-  - PDB Naming Convention: Each PDB file should be a single-chain structure with the format PDBID_chainID.pdb or PDBIDchainID.pdb (e.g., 1abc_A.pdb, 1abcA.pdb). This is critical for script compatibility.
-- Create phylogeny: Run the GesamtTree.py script on the specified folder to generate a structural phylogeny based on the PDB files.
-  - ``` python GesamtTree.py <FolderName> ```
+> [!IMPORTANT]
+> **PDB Naming Convention:** Each PDB file should be a single-chain structure with the format ```PDBID_chainID.pdb``` or ```PDBIDchainID.pdb``` (e.g., 1abc_A.pdb, 1abcA.pdb). This is critical for script compatibility.
+- Create phylogeny: Run the GesamtTree.py script on the specified folder to generate a structural phylogeny based on the PDB files
+  ```
+  python GesamtTree.py <FolderName>
+  ```
 
+Then, molecular dynamics is used to generate alternative conformations, which can then be sampled randomly to build alternative trees for bootstrap support in phylogenetic analyses
 
-### 2. MD simulation set-up
-
+## 2. MD simulation set-up
+MD setup prepares a molecular system for simulation, ensuring it is physically and realistic configured.
 In general, this requires: 
-1. PDB File Preparation
-2. Setup the size and shape of the simulation box
-3. Energy minimization
-4. Solvation
-5. Ionisation
-6. Heating of the system
+1. **PDB File Preparation:** Clean the structure (remove non-standard residues, add missing atoms)
+2. **Setup of the simulation box:** Define a box around the molecule (size, shape)
+3. **Energy minimization:** Resolve steric clashes and optimize geometry.
+4. **Solvation:** Add water molecules to mimic a realistic environment.
+5. **Ionisation:** Add ions (e.g., Na+, Cl⁻) for charge neutrality or the natural environment of the molecule.
+6. **Heating of the system:** Gradually raise system temperature to simulation conditions.
 
 For detailed information about each step, see ((https://link.springer.com/protocol/10.1007/978-1-4939-9869-2_17#Sec16))
 
 These steps can be done:
 - manually by using CHARMM GUI Website (https://www.charmm-gui.org/)
-- using scripts
+- using command line/scripts
 
-#### Option 1: Using CHARMM GUI Website (https://www.charmm-gui.org/) (allows to visually check outputs and intermediate steps visually; very user-friendly interface and handling)
+### Option 1: Using CHARMM GUI Website (https://www.charmm-gui.org/) 
+(allows to visually check outputs and intermediate steps visually; very user-friendly interface and handling)
 
-1. Account Access: CHARMM-GUI requires an active account for input generation.
-2. Setup Steps:
+> [!IMPORTANT]
+> CHARMM-GUI requires an active account for input generation. You need to set this up before you can use the CHARMM GUI Solution Builder.
+> 
+1. Setup Steps:
   - After logging in, navigate to Input Generator > Solution Builder. Solution Builder generates input files for molecular dynamics simulations, allowing you to either solvate your molecule or create a standalone water box for other uses (Alternatively, select a different builder based on the protein type).
   - Load Protein:
     - Option 1: Upload a specific PDB file.
@@ -69,7 +75,7 @@ These steps can be done:
   - Download the generated files download.tgz and save them in a directory named after the protein’s PDB ID.
   - Upload to HPC: Transfer the folder to the HPC cluster and extract the files
 
-#### Option 2: Using Scripts
+### Option 2: Using scripts
 > [!CAUTION]
 > Scripts only work if pdb-file only contains protein with no engeniered AA, waters, ions,...
 
@@ -77,17 +83,66 @@ These steps can be done:
 1. PDB File Preparation: Manually clean the PDB file to ensure compatibility with the MD setup:
   - Remove non-standard residues (engineered residues, water, ions, ligands, RNA/DNA,... as it can create errors when running gmx and gmx grompp).
   - Only keep the protein of interest.
-2. Make force field available: CHARMM27 comes with GROMACS as a default option. But CHARMM27 can also be used. To make the newer version CHARMM36m available, it needs to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and once unzipped kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; standard installation location: /usr/share/gromacs/top). Alternatively, when using a HPC it can be placed into the working directory. 
-It is recommended to try the simulation setup steps to see which number the force field CHARMM36m has, it has to be adjusted in the scripts used
-3. Run Simulation Setup:
-  - HPC Version: Use sim_setup_slurm.py to configure system requirements, Slurm header, and other parameters based on the computational resources.
-  - Local Version: If running on a local machine, execute sim_setup.py (the non-Slurm version).
+2. Make force field available: CHARMM27 comes with GROMACS as a default option. But CHARMM27 can also be used. To make the newer version CHARMM36m available, it needs to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and once unzipped kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; standard installation location: /usr/share/gromacs/top). Alternatively, an HPC can be placed in the working directory. 
+It is recommended to try the simulation setup steps to see which number the force field CHARMM36m has; it has to be adjusted in the scripts used
+3. Run Simulation Setup: Use ```MD/sim_setup_slurm.py``` to configure system requirements, Slurm header, and other parameters based on the computational resources.
+
+### Option 3: Using command line
+Run the following commands in the command line to set a protein up. Check the output of every step to make sure everything is set up correctly
+```
+ module load GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid
+```
+THIS RUNS THE FILE CONVERSION FROM PDB TO GRO
+```
+gmx pdb2gmx -f <protein>.pdb -o <protein>.gro -ignh
+```
+Choose the force field ( for example, CHARMM36) and TIP3 water model
+
+ADD SIMULATION BOX
+```
+gmx editconf -f <protein>.gro -o <protein>_box.gro -bt cubic -d 1.2 -c
+```
+ENERGY MINIMISATION
+```
+gmx grompp -f min_sd.mdp -c <protein>_box.gro -p topol.top -o <protein>_minsd.tpr
+gmx mdrun -deffnm <protein>_minsd
+```
+ADD WATER TO THE BOX
+```
+gmx solvate -cp <protein>_minsd.gro -cs spc216.gro -p topol.top -o <protein>_solv.gro
+```
+ENERGY MINIMISATION
+```
+gmx grompp -f min_sd.mdp -c <protein>_solv.gro -p topol.top -o <protein>_solv_minsd.tpr -maxwarn 1
+gmx mdrun -deffnm <protein>_solv_minsd -maxwarn 1
+```
+ADD IONS
+```
+gmx grompp -f ions.mdp -c <protein>_solv_minsd.gro -p topol.top -o <protein>_ions.tpr -maxwarn 1
+gmx genion -s <protein>_ions.tpr -p topol.top -o <protein>_ions.gro -neutral
+```
+Choose Iontype 
+
+MAKE INDEX FILE
+```
+gmx make_ndx -f <protein>_ions.gro -o index.ndx
+```
+Type 'q' and enter
+
+ENERGY MINIMISATION
+```
+gmx grompp -f min_sd.mdp -c <protein>_ions.gro -p topol.top -o <protein>_ions_minsd.tpr -maxwarn 1
+gmx mdrun -deffnm <protein>_ions_minsd
+```
+INITIALISATION AND HEATING
+```
+gmx grompp -f charmm-inputs/charmm_nvt_heat.mdp -c <protein>_ions_minsd.gro -r <protein>_ions_minsd.gro -p topol.top -o <protein>_nvt_heat.tpr
+gmx mdrun -deffnm <protein>_nvt_heat
+```
 
 
 
-
-
-### 3. Simulation Run 
+## 3. MD Simulation Run 
 1. Directory Organization: Create a unique directory for each protein and place the ```charmm-gui.tgz``` file inside (as mentioned in 3.2 point 4)
 2. Upload to HPC and extract files: Transfer the folder to the HPC cluster and extract the files. Unzip the CHARMM-GUI setup files in each folder (as mentioned in 3.2 point 4)
 The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
@@ -112,18 +167,31 @@ For a protein from roughly  300 AA 6 has proven to be enough
 
 
 
-### 4. Post-Simulation Processing
+## 4. Post-Simulation Processing
 
-1. Trajectory Concatenation: Concatenate all trajectory segments into a single trajectory file for continuity. (Note: Use GROMACS to concatenate trajectory files for each protein, combining individual parts into a complete trajectory: ``` gmx trjcat -f <name>.part*.xtc -o <name>.all.xtc``` )
-2. Protein Extraction and PBC Correction: Transform the concatenated trajectory to remove artefacts caused by periodic boundaries. Centre the protein in the simulation box, ensuring molecules are visually and structurally continuous. Align the protein across frames by removing global rotation and translation, making it easier to analyze internal motions. (Note: Use GROMACS to extract the protein coordinates and apply periodic boundary corrections: ``` gmx trjconv -f <name>.all.xtc -ur compact -n index.ndx -o <name>.prot.xtc -pbc mol -center -s <name>.tpr``` , and fit the protein for final analysis: ``` gmx trjconv -f <name>.prot.xtc -n index.ndx -o <name>.proc.xtc -s <name>.tpr -fit rot+trans``` )
-3. Extract final structure: Extract a single representative structure from the trajectory at a specified time point (ideally the starting point) to view the simulation. (Note: safe gro file to view the simulation in VMD: ``` gmx trjconv -f <name>.prot.xtc -b 0 -e 0 -n index.ndx -o <name>.proc.gro -s <name>.tpr``` ) 
+1. Trajectory Concatenation: Concatenate all trajectory segments into a single trajectory file for continuity. Use GROMACS to concatenate trajectory files for each protein, combining individual parts into a complete trajectory:
+ ```
+ gmx trjcat -f <name>.part*.xtc -o <name>.all.xtc
+ ``` 
+3. Protein Extraction and PBC Correction: Transform the concatenated trajectory to remove artefacts caused by periodic boundaries. Centre the protein in the simulation box, ensuring molecules are visually and structurally continuous. Align the protein across frames by removing global rotation and translation, making it easier to analyze internal motions. Use GROMACS to extract the protein coordinates and apply periodic boundary corrections:
+```
+gmx trjconv -f <name>.all.xtc -ur compact -n index.ndx -o <name>.prot.xtc -pbc mol -center -s <name>.tpr
+```
+and fit the protein for final analysis: 
+``` 
+gmx trjconv -f <name>.prot.xtc -n index.ndx -o <name>.proc.xtc -s <name>.tpr -fit rot+trans
+``` 
+5. Extract final structure: Extract a single representative structure from the trajectory at a specified time point (ideally the starting point) to view the simulation. Save gro file to view the simulation in VMD:
+```
+gmx trjconv -f <name>.prot.xtc -b 0 -e 0 -n index.ndx -o <name>.proc.gro -s <name>.tpr
+``` 
 
 
 
 
 
 
-### 5. Bootstrapping and Structural Phylogeny Analysis
+## 5. Bootstrapping and Structural Phylogeny Analysis
 
 This section describes the process for generating structural phylogenies with bootstrapping. Bootstrapping helps assess the stability of phylogenetic relationships by generating multiple replicates, each based on random samples of simulation frames. The following steps require the completed MD simulations with trajectory (.xtc) and structure (.gro) files.
 1. Organize Input Files:
@@ -141,18 +209,26 @@ To determine the correct frame count, load the .gro and .xtc files into a viewer
 3. Run Structural Analysis on Trials:
   - With the trials generated, use GesamtTree.py to analyze each trial folder within the Trajectories/Trials directory. This script will generate phylogenetic trees for each bootstrap replicate.
   - Execution Command:
-This command (```python3 GesamtTree.py Trajectories/Trial/trial_*```) runs GesamtTree.py on each trial directory, producing a phylogenetic tree output for every bootstrap sample.
+This command
+```
+python3 GesamtTree.py Trajectories/Trial/trial_*
+``` runs GesamtTree.py on each trial directory, producing a phylogenetic tree output for every bootstrap sample.
 4. Generate a Consensus Phylogenetic Tree and Map Bootstrap Values:
   - Once phylogenetic trees have been generated for all bootstrap trials, you can either:
     - Create a Majority-Rule Consensus Tree from the bootstrap replicates, which combines all individual trees to identify the most consistent relationships.
     - Map Bootstrap Values onto a Reference Tree to reflect the stability of nodes in the reference structure.
   - Options:
     - Majority-Rule Consensus Tree: This option compiles the bootstrap trial trees into a single consensus tree, with nodes representing relationships that appear in a specified percentage of the bootstrap samples. For example, setting a 60% threshold (```-f 0.6```) will include only those relationships that appear in at least 60% of the trees.
-```sumtrees -s consensus -o consensus60 -f 0.6 -p -d0 Trajectories/Trials/trial_*/*.nex```
+```
+sumtrees -s consensus -o consensus60 -f 0.6 -p -d0 Trajectories/Trials/trial_*/*.nex
+```
 This produces a consensus tree (consensus60) that highlights the most frequent relationships across bootstrap trials.
     - Mapping Bootstrap Values onto a Reference Tree: If you have a reference tree from Section 3.1, you can add bootstrap support values directly onto it, rather than generating a separate consensus tree. This approach maps the percentage of bootstrap trees supporting each node directly onto the nodes of the reference tree, indicating the stability of each branch.
-```sumtrees -d0 -p -o OutputTree -t ReferenceTree Trajectories/Trials/trial_*/*.nex```
-    - Here:
-      - OutputTree will contain the reference tree structure with bootstrap values annotated on each node.
-      - Interpretation: Higher bootstrap values on a node in the reference tree suggest strong support for that relationship across bootstrap replicates, while lower values indicate less stability.
+```
+sumtrees -d0 -p -o OutputTree -t Referencetree/<ReferenceTree> Trajectories/Trials/trial_*/*Formatted.nex
+```
+
+  - Here:
+    - OutputTree will contain the reference tree structure with bootstrap values annotated on each node.
+    - Interpretation: Higher bootstrap values on a node in the reference tree suggest strong support for that relationship across bootstrap replicates, while lower values indicate less stability.
 
