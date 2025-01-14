@@ -1,4 +1,4 @@
-# Structural-Phylogeny-with-MD-Bootstrap
+  # Structural-Phylogeny-with-MD-Bootstrap
 The Structural Phylogeny with MD-Bootstrap method constructs structural phylogenies and provides statistical confidence through molecular dynamics (MD) simulations.
 
 ## What does the method do, and how? 
@@ -58,9 +58,9 @@ These steps can be done:
   - Model/Chain Selection Option: Select the desired protein chain, then proceed to configure the settings.
 3. Configuration Options: 
   - PDB Manipulation Options: Customize manipulation options for the structure based on experimental needs, such as removing certain residues or modifying the structure, if required. Click Next Step to apply the settings. After the calculation, use the CHARMM-GUI viewer to confirm that the desired modifications to the protein structure have been applied accurately before proceeding to the next configuration.
-  - Water Box Configuration and ions: Configure the water box size and type to solvate the protein. Add ions to achieve wanted physiological conditions (Note: we’ve used distance placing method and chosen 10 A edge distance and added NaCl ions). Click Next Step to apply the settings. After the calculation, use the CHARMM-GUI viewer to confirm that the desired modifications to the protein structure have been applied accurately before proceeding to the next configuration.
+  - Water Box Configuration and ions: Configure the water box size and type to solvate the protein. Add ions to achieve wanted physiological conditions (Note: we’ve used the distance placing method and chosen 10 A edge distance and added NaCl ions). Click Next Step to apply the settings. After the calculation, use the CHARMM-GUI viewer to confirm that the desired modifications to the protein structure have been applied accurately before proceeding to the next configuration.
   - Boundary Conditions: Set the periodic boundary conditions (PBC) automatically or adjust manually according to simulation requirements. Click Next Step to apply the settings. After the calculation, use the CHARMM-GUI viewer to confirm that the desired modifications to the protein structure have been applied accurately before proceeding to the next configuration.
-  - Force Field Selection: Choose desired force field. CHARMM36m is popular and recommended for protein systems. Ensure that selected force fields and solvent models are compatible. 
+  - Force Field Selection: Choose the desired force field. CHARMM36m is popular and recommended for protein systems. Ensure that selected force fields and solvent models are compatible. 
   - Equilibration and Simulation Parameters:
     - Select GROMACS as the output format.
     - Set NVT Ensemble for equilibration and NPT Ensemble for dynamics. Specify the temperature of choice for simulations.
@@ -114,7 +114,9 @@ Initial Testing: Test with one protein to identify potential issues before full 
 
 ### 4. Post-Simulation Processing
 
-
+1. Trajectory Concatenation: Concatenate all trajectory segments into a single trajectory file for continuity. (Note: Use GROMACS to concatenate trajectory files for each protein, combining individual parts into a complete trajectory: ``` gmx trjcat -f <name>.part*.xtc -o <name>.all.xtc``` )
+2. Protein Extraction and PBC Correction: Transform the concatenated trajectory to remove artefacts caused by periodic boundaries. Centre the protein in the simulation box, ensuring molecules are visually and structurally continuous. Align the protein across frames by removing global rotation and translation, making it easier to analyze internal motions. (Note: Use GROMACS to extract the protein coordinates and apply periodic boundary corrections: ``` gmx trjconv -f <name>.all.xtc -ur compact -n index.ndx -o <name>.prot.xtc -pbc mol -center -s <name>.tpr``` , and fit the protein for final analysis: ``` gmx trjconv -f <name>.prot.xtc -n index.ndx -o <name>.proc.xtc -s <name>.tpr -fit rot+trans``` )
+3. Extract final structure: Extract a single representative structure from the trajectory at a specified time point (ideally the starting point) to view the simulation. (Note: safe gro file to view the simulation in VMD: ``` gmx trjconv -f <name>.prot.xtc -b 0 -e 0 -n index.ndx -o <name>.proc.gro -s <name>.tpr``` ) 
 
 
 
@@ -122,3 +124,35 @@ Initial Testing: Test with one protein to identify potential issues before full 
 
 
 ### 5. Bootstrapping and Structural Phylogeny Analysis
+
+This section describes the process for generating structural phylogenies with bootstrapping. Bootstrapping helps assess the stability of phylogenetic relationships by generating multiple replicates, each based on random samples of simulation frames. The following steps require the completed MD simulations with trajectory (.xtc) and structure (.gro) files.
+1. Organize Input Files:
+Ensure all .xtc and .gro files for each protein are collected in a folder named Trajectories. Each trajectory file should correspond to a unique protein.
+2. Prepare Bootstrapping Replicates with BS_master_sort.py:
+  - Setup: Place the BS_master_sort.py script outside the Trajectories folder to organize trials and generate the required number of bootstrap samples. This script will select random frames from each trajectory, creating directories with the sampled structures for each trial.
+  - Parameter Adjustments:
+    - Number of Trials: Define the total number of bootstrap replicates by setting the N_trials variable in BS_master_sort.py. For example:
+    N_trials = 200  # Set to the desired number of bootstrap trials
+    dir_trial = np.arange(0, 200, 1)  # Creates folders for each trial
+    This configuration will generate 200 bootstrap trials, each with randomly selected frames.
+    - Frame Selection: Adjust the number of frames per trial based on the length of your MD simulation:frame_sel = np.random.randint(0, 10000, N_trials)  # Modify '10000' to match total frames
+To determine the correct frame count, load the .gro and .xtc files into a viewer like VMD. Once fully loaded, VMD will display the total frame count for the trajectory.
+  - Generate Bootstrapping Directories: Running BS_master_sort.py will create a series of directories named trial_0, trial_1, etc., each containing a unique set of frames selected randomly from the original trajectory. 
+3. Run Structural Analysis on Trials:
+  - With the trials generated, use GesamtTree.py to analyze each trial folder within the Trajectories/Trials directory. This script will generate phylogenetic trees for each bootstrap replicate.
+  - Execution Command:
+This command (```python3 GesamtTree.py Trajectories/Trial/trial_*```) runs GesamtTree.py on each trial directory, producing a phylogenetic tree output for every bootstrap sample.
+Generate a Consensus Phylogenetic Tree and Map Bootstrap Values:
+Once phylogenetic trees have been generated for all bootstrap trials, you can either:
+Create a Majority-Rule Consensus Tree from the bootstrap replicates, which combines all individual trees to identify the most consistent relationships.
+Map Bootstrap Values onto a Reference Tree to reflect the stability of nodes in the reference structure.
+Options:
+Majority-Rule Consensus Tree: This option compiles the bootstrap trial trees into a single consensus tree, with nodes representing relationships that appear in a specified percentage of the bootstrap samples. For example, setting a 60% threshold (-f 0.6) will include only those relationships that appear in at least 60% of the trees.
+sumtrees -s consensus -o consensus60 -f 0.6 -p -d0 Trajectories/Trials/trial_*/*.nex
+This produces a consensus tree (consensus60) that highlights the most frequent relationships across bootstrap trials.
+Mapping Bootstrap Values onto a Reference Tree: If you have a reference tree from Section 3.1, you can add bootstrap support values directly onto it, rather than generating a separate consensus tree. This approach maps the percentage of bootstrap trees supporting each node directly onto the nodes of the reference tree, indicating the stability of each branch.
+sumtrees -d0 -p -o OutputTree -t ReferenceTree Trajectories/Trials/trial_*/*.nex
+Here:
+OutputTree will contain the reference tree structure with bootstrap values annotated on each node.
+Interpretation: Higher bootstrap values on a node in the reference tree suggest strong support for that relationship across bootstrap replicates, while lower values indicate less stability.
+
