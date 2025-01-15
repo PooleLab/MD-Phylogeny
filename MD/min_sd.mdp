@@ -1,0 +1,21 @@
+; Steepest Descent Energy Minimisation
+
+; run control
+integrator          =  steep
+nsteps              =  10000
+emtol               =  2
+emstep              =  0.01
+nstcomm             =  100
+
+; Bond constraints
+constraints         =  none
+; Temperature coupling
+Tcoupl              =  no
+; Pressure coupling
+Pcoupl              =  no
+; Velocity generation
+gen_vel             =  no
+
+; Output frequency for energies to log file and energy file
+nstlog                   = 200
+nstenergy                = 200
