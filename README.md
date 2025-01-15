@@ -190,7 +190,7 @@ The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
  ```
  gmx trjcat -f <name>.part*.xtc -o <name>.all.xtc
  ``` 
-3. Protein Extraction and PBC Correction: Transform the concatenated trajectory to remove artefacts caused by periodic boundaries. Centre the protein in the simulation box, ensuring molecules are visually and structurally continuous. Align the protein across frames by removing global rotation and translation, making it easier to analyze internal motions. Use GROMACS to extract the protein coordinates and apply periodic boundary corrections:
+2. Protein Extraction and PBC Correction: Transform the concatenated trajectory to remove artefacts caused by periodic boundaries. Centre the protein in the simulation box, ensuring molecules are visually and structurally continuous. Align the protein across frames by removing global rotation and translation, making it easier to analyze internal motions. Use GROMACS to extract the protein coordinates and apply periodic boundary corrections:
 ```
 gmx trjconv -f <name>.all.xtc -ur compact -n index.ndx -o <name>.prot.xtc -pbc mol -center -s <name>.tpr
 ```
@@ -198,7 +198,7 @@ and fit the protein for final analysis:
 ``` 
 gmx trjconv -f <name>.prot.xtc -n index.ndx -o <name>.proc.xtc -s <name>.tpr -fit rot+trans
 ``` 
-5. Extract final structure: Extract a single representative structure from the trajectory at a specified time point (ideally the starting point) to view the simulation. Save gro file to view the simulation in VMD:
+3. Extract final structure: Extract a single representative structure from the trajectory at a specified time point (ideally the starting point) to view the simulation. Save gro file to view the simulation in VMD:
 ```
 gmx trjconv -f <name>.prot.xtc -b 0 -e 0 -n index.ndx -o <name>.proc.gro -s <name>.tpr
 ``` 
