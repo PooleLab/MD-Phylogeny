@@ -225,7 +225,8 @@ Ensure all ```.xtc``` and ```.gro``` files for each protein are collected in a f
 >To determine the correct frame count, load the .gro and .xtc files into a viewer like VMD. Once fully loaded, VMD will display the total frame count for the trajectory.
   - Generate Bootstrapping Directories:
     Run
-    ``` python3 BS_master_sort.py
+    ```
+    python3 BS_master_sort.py
     ```
     Thus will create a series of directories named trial_0, trial_1, etc., each containing a unique set of frames selected randomly from the original trajectory. 
 3. Run Structural Analysis on Trials:
@@ -236,6 +237,7 @@ This command
 python3 GesamtTree.py Trajectories/Trial/trial_*
 ```
 runs ```GesamtTree.py``` on each trial directory, producing a phylogenetic tree output for every bootstrap sample.
+
 4. Generate a Consensus Phylogenetic Tree and Map Bootstrap Values:
   - Once phylogenetic trees have been generated for all bootstrap trials, you can either:
     - Create a Majority-Rule Consensus Tree from the bootstrap replicates, which combines all individual trees to identify the most consistent relationships.
