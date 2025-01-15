@@ -75,7 +75,7 @@ These steps can be done:
   - Download the generated files download.tgz and save them in a directory named after the protein’s PDB ID.
   - Upload to HPC: Transfer the folder to the HPC cluster and extract the files
 
-You then need the ```<protein>_nvt_heat.gro``, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
+You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
 
 ### Option 2: Using scripts
 > [!CAUTION]
@@ -151,7 +151,7 @@ gmx grompp -f charmm-inputs/charmm_nvt_heat.mdp -c <protein>_ions_minsd.gro -r <
 ```
 gmx mdrun -deffnm <protein>_nvt_heat
 ```
-You then need the ```<protein>_nvt_heat.gro``, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
+You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
 
 
 ## 3. MD Simulation Run 
