@@ -32,10 +32,10 @@ FigTree or iTOL for phylogenies
   python GesamtTree.py <FolderName>
   ```
 
-Then, molecular dynamics is used to generate alternative conformations, which can then be sampled randomly to build alternative trees for bootstrap support in phylogenetic analyses
+Then, molecular dynamics is used to generate alternative conformations, which can then be sampled randomly to build alternative trees for bootstrap support in phylogenetic analyses.
 
 ## 2. MD simulation set-up
-MD setup prepares a molecular system for simulation, ensuring it is physically and realistic configured.
+MD setup prepares a molecular system for simulation, ensuring it is physically and realistically configured.
 In general, this requires: 
 1. **PDB File Preparation:** Clean the structure (remove non-standard residues, add missing atoms)
 2. **Setup of the simulation box:** Define a box around the molecule (size, shape)
@@ -54,7 +54,7 @@ These steps can be done:
 (allows to visually check outputs and intermediate steps visually; very user-friendly interface and handling)
 
 > [!IMPORTANT]
-> CHARMM-GUI requires an active account for input generation. You need to set this up before you can use the CHARMM GUI Solution Builder.
+> CHARMM-GUI requires an active account for input generation. You need to set this up before using the CHARMM GUI Solution Builder.
 > 
 1. Setup Steps:
   - After logging in, navigate to Input Generator > Solution Builder. Solution Builder generates input files for molecular dynamics simulations, allowing you to either solvate your molecule or create a standalone water box for other uses (Alternatively, select a different builder based on the protein type).
@@ -85,12 +85,13 @@ You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top
 1. PDB File Preparation: Manually clean the PDB file to ensure compatibility with the MD setup:
   - Remove non-standard residues (engineered residues, water, ions, ligands, RNA/DNA,... as it can create errors when running gmx and gmx grompp).
   - Only keep the protein of interest.
-2. Make force field available: CHARMM27 comes with GROMACS as a default option. But CHARMM27 can also be used. To make the newer version CHARMM36m available, it needs to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and once unzipped kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; standard installation location: /usr/share/gromacs/top). Alternatively, an HPC can be placed in the working directory. 
+2. Make the force field available: CHARMM27 has GROMACS as a default option. But CHARMM27 can also be used. To make the newer version CHARMM36m available, it needs to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and, once unzipped, kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; standard installation location: /usr/share/gromacs/top). Alternatively, an HPC can be placed in the working directory. 
 It is recommended to try the simulation setup steps to see which number the force field CHARMM36m has; it has to be adjusted in the scripts used
 3. Run Simulation Setup: Use ```MD/sim_setup_slurm.py``` to configure system requirements, Slurm header, and other parameters based on the computational resources.
 
 ### Option 3: Using command line
-Run the following commands in the command line to set a protein up. Check the output of every step to make sure everything is set up correctly
+Run the following commands in the command line to set a protein up. Check every step's output to ensure everything is set up correctly.
+Load the module if you work on an HPC; otherwise, skip this first command.
 ```
  module load GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid
 ```
@@ -98,7 +99,7 @@ THIS RUNS THE FILE CONVERSION FROM PDB TO GRO
 ```
 gmx pdb2gmx -f <protein>.pdb -o <protein>.gro -ignh
 ```
-Choose the force field ( for example, CHARMM36) and TIP3 water model
+Choose the force field ( for example, CHARMM36) and TIP3 water model.
 
 ADD SIMULATION BOX
 ```
@@ -129,7 +130,7 @@ gmx grompp -f ions.mdp -c <protein>_solv_minsd.gro -p topol.top -o <protein>_ion
 ```
 gmx genion -s <protein>_ions.tpr -p topol.top -o <protein>_ions.gro -neutral
 ```
-Choose 13 and press enter
+Choose 13 and press enter.
 
 MAKE INDEX FILE
 ```
@@ -156,8 +157,8 @@ You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top
 
 ## 3. MD Simulation Run 
 > [!IMPORTANT]
-> The scripts used in this step are adjusted to the set-up done by using CHARMM GUI website. Adjust paths and file names according to how you did the set up.
-> You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```, ```equilibration.mdp``` and ```production.mdp``` file to do a MD simulation. There are templates for ```.mdp``` in ```MD/templates``` folder. Adjust to your liking, and make sure you adjust names of the files themselfes or adjust filenames in the scripts.
+> The scripts used in this step are adjusted to the set-up using CHARMM GUI website. Adjust paths and file names according to how you set them up.
+> You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```, ```equilibration.mdp``` and ```production.mdp``` file to do a MD simulation. There are templates for ```.mdp``` in ```MD/templates``` folder. Adjust to your liking, and make sure you adjust the names of the files themselves or adjust filenames in the scripts.
 
 1. Directory Organization: Create a unique directory for each protein and place the ```charmm-gui.tgz``` file inside (as mentioned in 3.2 point 4)
 2. Upload to HPC and extract files: Transfer the folder to the HPC cluster and extract the files. Unzip the CHARMM-GUI setup files in each folder (as mentioned in 3.2 point 4)
