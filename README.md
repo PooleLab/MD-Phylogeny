@@ -247,12 +247,11 @@ sumtrees -s consensus -o consensus60 -f 0.6 -p -d0 Trajectories/Trials/trial_*/F
 ```
 This produces a consensus tree (consensus60) highlighting the most frequent relationships across bootstrap trials.
 
-    - **Mapping Bootstrap Values onto a Reference Tree:** If you have a reference tree from Section 3.1, you can add Bootstrap support values directly onto it rather than generating a separate consensus tree. This approach maps the percentage of bootstrap trees supporting each node directly onto the reference tree nodes, indicating each branch's stability.
+  - **Mapping Bootstrap Values onto a Reference Tree:** If you have a reference tree from Section 3.1, you can add Bootstrap support values directly onto it rather than generating a separate consensus tree. This approach maps the percentage of bootstrap trees supporting each node directly onto the reference tree nodes, indicating each branch's stability. 
 ```
 sumtrees -d0 -p -o OutputTree -t Referencetree/<ReferenceTree> Trajectories/Trials/trial_*/Formatted.nex
 ```
-
   - Here:
-    - OutputTree will contain the reference tree structure with bootstrap values annotated on each node.
+    - ```OutputTree``` will contain the reference tree structure with bootstrap values annotated on each node.
     - Interpretation: Higher bootstrap values on a node in the reference tree suggest strong support for that relationship across bootstrap replicates, while lower values indicate less stability.
 
