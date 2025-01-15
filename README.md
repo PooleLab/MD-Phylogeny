@@ -155,7 +155,7 @@ gmx mdrun -deffnm <protein>_nvt_heat
 ## 3. MD Simulation Run 
 > [!IMPORTANT]
 > The scripts used in this step are adjusted to the set-up done by using CHARMM GUI website. Adjust paths and file names according to how you did the set up.
-> You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```, ```equilibration.mdp``` and ```production.mdp``` file to do a MD simulation. There are templates for ```.mdp``` in ```templates``` folder. Adjust to your liking, and make sure you adjust names of the files themselfes or adjust filenames in the scripts.
+> You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```, ```equilibration.mdp``` and ```production.mdp``` file to do a MD simulation. There are templates for ```.mdp``` in ```MD/templates``` folder. Adjust to your liking, and make sure you adjust names of the files themselfes or adjust filenames in the scripts.
 
 1. Directory Organization: Create a unique directory for each protein and place the ```charmm-gui.tgz``` file inside (as mentioned in 3.2 point 4)
 2. Upload to HPC and extract files: Transfer the folder to the HPC cluster and extract the files. Unzip the CHARMM-GUI setup files in each folder (as mentioned in 3.2 point 4)
@@ -210,39 +210,45 @@ gmx trjconv -f <name>.prot.xtc -b 0 -e 0 -n index.ndx -o <name>.proc.gro -s <nam
 
 ## 5. Bootstrapping and Structural Phylogeny Analysis
 
-This section describes the process for generating structural phylogenies with bootstrapping. Bootstrapping helps assess the stability of phylogenetic relationships by generating multiple replicates, each based on random samples of simulation frames. The following steps require the completed MD simulations with trajectory (.xtc) and structure (.gro) files.
+This section describes the process for generating structural phylogenies with bootstrapping. Bootstrapping helps assess the stability of phylogenetic relationships by generating multiple replicates, each based on random samples of simulation frames. The following steps require the completed MD simulations with trajectory (```.xtc```) and structure (```.gro```) files.
 1. Organize Input Files:
-Ensure all .xtc and .gro files for each protein are collected in a folder named Trajectories. Each trajectory file should correspond to a unique protein.
-2. Prepare Bootstrapping Replicates with BS_master_sort.py:
-  - Setup: Place the BS_master_sort.py script outside the Trajectories folder to organize trials and generate the required number of bootstrap samples. This script will select random frames from each trajectory, creating directories with the sampled structures for each trial.
+Ensure all ```.xtc``` and ```.gro``` files for each protein are collected in a folder named ```Trajectories```. Each trajectory file should correspond to a unique protein.
+2. Prepare Bootstrapping Replicates with ```BS_master_sort.py```:
+  - Setup: Place the ```BS_master_sort.py``` script outside the ```Trajectories``` folder to organize trials and generate the required number of bootstrap samples. This script will select random frames from each trajectory, creating directories with the sampled structures for each trial.
   - Parameter Adjustments:
     - Number of Trials: Define the total number of bootstrap replicates by setting the N_trials variable in BS_master_sort.py. For example:
     ```N_trials = 200  # Set to the desired number of bootstrap trials```
     ```dir_trial = np.arange(0, 200, 1)  # Creates folders for each trial```
     This configuration will generate 200 bootstrap trials, each with randomly selected frames.
     - Frame Selection: Adjust the number of frames per trial based on the length of your MD simulation: ```frame_sel = np.random.randint(0, 10000, N_trials)  # Modify '10000' to match total frames of your simulation```
-To determine the correct frame count, load the .gro and .xtc files into a viewer like VMD. Once fully loaded, VMD will display the total frame count for the trajectory.
-  - Generate Bootstrapping Directories: Running BS_master_sort.py will create a series of directories named trial_0, trial_1, etc., each containing a unique set of frames selected randomly from the original trajectory. 
+>[!Tip]
+>To determine the correct frame count, load the .gro and .xtc files into a viewer like VMD. Once fully loaded, VMD will display the total frame count for the trajectory.
+  - Generate Bootstrapping Directories:
+    Run
+    ``` python3 BS_master_sort.py
+    ```
+    Thus will create a series of directories named trial_0, trial_1, etc., each containing a unique set of frames selected randomly from the original trajectory. 
 3. Run Structural Analysis on Trials:
-  - With the trials generated, use GesamtTree.py to analyze each trial folder within the Trajectories/Trials directory. This script will generate phylogenetic trees for each bootstrap replicate.
+  - With the trials generated, use ```GesamtTree.py``` to analyze each trial folder within the ```Trajectories/Trials``` directory. This script will generate phylogenetic trees for each bootstrap replicate.
   - Execution Command:
 This command
 ```
 python3 GesamtTree.py Trajectories/Trial/trial_*
-``` runs GesamtTree.py on each trial directory, producing a phylogenetic tree output for every bootstrap sample.
+```
+runs ```GesamtTree.py``` on each trial directory, producing a phylogenetic tree output for every bootstrap sample.
 4. Generate a Consensus Phylogenetic Tree and Map Bootstrap Values:
   - Once phylogenetic trees have been generated for all bootstrap trials, you can either:
     - Create a Majority-Rule Consensus Tree from the bootstrap replicates, which combines all individual trees to identify the most consistent relationships.
     - Map Bootstrap Values onto a Reference Tree to reflect the stability of nodes in the reference structure.
   - Options:
-    - Majority-Rule Consensus Tree: This option compiles the bootstrap trial trees into a single consensus tree, with nodes representing relationships that appear in a specified percentage of the bootstrap samples. For example, setting a 60% threshold (```-f 0.6```) will include only those relationships that appear in at least 60% of the trees.
+    - **Majority-Rule Consensus Tree:** This option compiles the bootstrap trial trees into a single consensus tree, with nodes representing relationships that appear in a specified percentage of the bootstrap samples. For example, setting a 60% threshold (```-f 0.6```) will include only those relationships that appear in at least 60% of the trees.
 ```
-sumtrees -s consensus -o consensus60 -f 0.6 -p -d0 Trajectories/Trials/trial_*/*.nex
+sumtrees -s consensus -o consensus60 -f 0.6 -p -d0 Trajectories/Trials/trial_*/Formatted.nex
 ```
-This produces a consensus tree (consensus60) that highlights the most frequent relationships across bootstrap trials.
-    - Mapping Bootstrap Values onto a Reference Tree: If you have a reference tree from Section 3.1, you can add bootstrap support values directly onto it, rather than generating a separate consensus tree. This approach maps the percentage of bootstrap trees supporting each node directly onto the nodes of the reference tree, indicating the stability of each branch.
+This produces a consensus tree (consensus60) highlighting the most frequent relationships across bootstrap trials.
+    - **Mapping Bootstrap Values onto a Reference Tree:** If you have a reference tree from Section 3.1, you can add Bootstrap support values directly onto it rather than generating a separate consensus tree. This approach maps the percentage of bootstrap trees supporting each node directly onto the reference tree nodes, indicating each branch's stability.
 ```
-sumtrees -d0 -p -o OutputTree -t Referencetree/<ReferenceTree> Trajectories/Trials/trial_*/*Formatted.nex
+sumtrees -d0 -p -o OutputTree -t Referencetree/<ReferenceTree> Trajectories/Trials/trial_*/Formatted.nex
 ```
 
   - Here:
