@@ -4,9 +4,9 @@ The Structural Phylogeny with MD-Bootstrap method constructs structural phylogen
 ## What does the method do, and how? 
 
 ## System Requirements 
-Operating system: Ideally, UNIX or Mac. If Windows use Windows Subsystem for Linux (WSL/WSL2), be aware of possible difficulties. 
+Operating system: Ideally, UNIX or Mac (not tested on Mac, yet) If Windows use Windows Subsystem for Linux (WSL/WSL2), be aware of possible difficulties. 
 
-MD Engine (best to use on an HPC): GROMACS (we’ve used GROMACS version GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid) and CHARMM are common choices for protein simulations, each compatible with different force fields (e.g., CHARMM36 for GROMACS what we have used).
+MD Engine (best to use on an HPC, as it gets too computationally intense for a Laptop or Desktop PC): GROMACS (we’ve used GROMACS version GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid) and CHARMM are common choices for protein simulations, each compatible with different force fields (e.g., CHARMM36 for GROMACS what we have used).
 
 ## Installations 
 
@@ -17,7 +17,11 @@ Gesamt (from https://www.ccp4.ac.uk/html/gesamt.html)
 sumtrees (https://jeetsukumaran.github.io/DendroPy/programs/sumtrees.html)
 #### Visualisation: 
 VMD (or Pymol) for structures and simulations 
+https://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=VMD
+https://www.pymol.org/
 FigTree or iTOL for phylogenies
+http://tree.bio.ed.ac.uk/software/figtree/
+https://itol.embl.de/
 
 
 # Method
