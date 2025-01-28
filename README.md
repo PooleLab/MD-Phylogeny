@@ -4,7 +4,7 @@ The Structural Phylogeny with MD-Bootstrap method constructs structural phylogen
 ## What does the method do, and how? 
 
 ## System Requirements 
-Operating system: Ideally, UNIX or Mac (not tested on Mac, yet) If Windows use Windows Subsystem for Linux (WSL/WSL2), be aware of possible difficulties. 
+Operating system: Ideally, UNIX or Mac (not tested on Mac, yet). If you are using Windows, you can use the Windows Subsystem for Linux (WSL/WSL2), but be aware of possible difficulties. 
 
 MD Engine (best to use on an HPC, as it gets too computationally intense for a Laptop or Desktop PC): GROMACS (we’ve used GROMACS version GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid) and CHARMM are common choices for protein simulations, each compatible with different force fields (e.g., CHARMM36 for GROMACS what we have used).
 
@@ -83,19 +83,19 @@ You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top
 
 ### Option 2: Using scripts
 > [!CAUTION]
-> Scripts only work if pdb-file only contains protein with no engeniered AA, waters, ions,...
+> Scripts only work if the PDB files contain only standard protein residues, with no engineered amino acids, waters, ions, etc.
 
 
 1. PDB File Preparation: Manually clean the PDB file to ensure compatibility with the MD setup:
-  - Remove non-standard residues (engineered residues, water, ions, ligands, RNA/DNA,... as it can create errors when running gmx and gmx grompp).
-  - Only keep the protein of interest.
-2. Make the force field available: CHARMM27 has GROMACS as a default option. But CHARMM27 can also be used. To make the newer version CHARMM36m available, it needs to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and, once unzipped, kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; standard installation location: /usr/share/gromacs/top). Alternatively, an HPC can be placed in the working directory. 
-It is recommended to try the simulation setup steps to see which number the force field CHARMM36m has; it has to be adjusted in the scripts used
+  - Remove non-standard residues (engineered residues, water, ions, ligands, RNA/DNA,... as it can create errors when running gmx programs, especially if parameters are not available).
+  - Only keep the protein or protein chain of interest.
+2. Make the force field available: GROMACS has CHARMM27 as a default option. While this force field is old, it can be used. However, we recommend using the newer CHARMM36 or CHARMM36m versions. To make these available to GROMACS, they need to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and, once unzipped, the resulting folder should be kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; the standard installation location is /usr/share/gromacs/top). Alternatively, e.g. on an HPC, the force field folder can be placed in the working directory. 
+It is recommended to try the simulation setup steps to see which number your desired force field has when listed by pdb2gmx; it has to be adjusted in the scripts.
 3. Run Simulation Setup: Use ```MD/sim_setup_slurm.py``` to configure system requirements, Slurm header, and other parameters based on the computational resources.
 
 ### Option 3: Using command line
 Run the following commands in the command line to set a protein up. Check every step's output to ensure everything is set up correctly.
-Load the module if you work on an HPC; otherwise, skip this first command.
+If you are working in interactive mode on an HPC, note that you may have to first load the GROMACS module. Below is an example for an HPC using the modules package manager. If you are not working on an HPC, and the GROMACS binary is in your path, skip this first command.
 ```
  module load GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid
 ```
@@ -134,7 +134,7 @@ gmx grompp -f ions.mdp -c <protein>_solv_minsd.gro -p topol.top -o <protein>_ion
 ```
 gmx genion -s <protein>_ions.tpr -p topol.top -o <protein>_ions.gro -neutral
 ```
-Choose 13 and press enter.
+Choose 13 (for SOL) and press enter.
 
 MAKE INDEX FILE
 ```
@@ -229,7 +229,7 @@ Ensure all ```.xtc``` and ```.gro``` files for each protein are collected in a f
     This configuration will generate 200 bootstrap trials, each with randomly selected frames.
     - Frame Selection: Adjust the number of frames per trial based on the length of your MD simulation: ```frame_sel = np.random.randint(0, 10000, N_trials)  # Modify '10000' to match total frames of your simulation```
 >[!Tip]
->To determine the correct frame count, load the .gro and .xtc files into a viewer like VMD. Once fully loaded, VMD will display the total frame count for the trajectory.
+>To determine the correct frame count, load the .gro and .xtc files into a viewer like VMD. Once fully loaded, VMD will display the total frame count for the trajectory. Alternatively, use gmx check on the .xtc file, or calculate the number of frames from your .mdp file as ```nsteps/nstxout-compressed```).
   - Generate Bootstrapping Directories:
     Run
     ```
