@@ -1,5 +1,5 @@
-  # Structural-Phylogeny-with-MD-Bootstrap
-The Structural Phylogeny with MD-Bootstrap method constructs structural phylogenies and provides statistical confidence through molecular dynamics (MD) simulations.
+  # MD-Phylogeny
+MD-Phylogeny constructs structural phylogenies and provides statistical confidence through molecular dynamics (MD) simulations.
 
 ## What does the method do, and how? 
 
