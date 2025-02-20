@@ -5,28 +5,66 @@ MD-Phylogeny constructs structural phylogenies and provides statistical confiden
 
 ## System Requirements 
 Operating system: Ideally, UNIX or Mac (not tested on Mac, yet). If you are using Windows, you can use the Windows Subsystem for Linux (WSL/WSL2), but be aware of possible difficulties. 
+For most preparatory and analytical steps it is ok to use laptop or desktop. But for molecular dynamics (MD) simulations an HPC is highly recommended. 
 
-MD Engine (best to use on an HPC, as it gets too computationally intense for a Laptop or Desktop PC): GROMACS (we’ve used GROMACS version GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid) and CHARMM are common choices for protein simulations, each compatible with different force fields (e.g., CHARMM36 for GROMACS what we have used).
+MD Engine (best to use on an HPC, as it gets too computationally intense for a Laptop or Desktop PC): Be aware that our scripts are developed for GROMACS version 2020 and will require significant adaptation for use with other MD engines
+
+GROMACS (we have used GROMACS version GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid) and CHARMM force fields (we have used CHARMM36 for GROMACS). (https://doi.org/10.5281/zenodo.3562512)
+
+
 
 ## Installations 
 
-Python for script execution, with NumPy, dendropy, Bio, natsort 
-#### Structural alignment
+#### Visualisation of structures and simulations
+Visual Molecular Dynamics (VMD) (https://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=VMD) or Pymol (https://www.pymol.org/) to visualise structures and VMD to visualise simulation trajectories. 
+#### Structural superposition and calculation of Qscore:
 Gesamt (from https://www.ccp4.ac.uk/html/gesamt.html)
-#### Phylogenetic Tree Summarization and Annotation: 
+#### Visualisation of Phylogenies: 
+FigTree (http://tree.bio.ed.ac.uk/software/figtree/) or iTOL (https://itol.embl.de/)
+#### Summarization and annotation of phylogenies: 
 sumtrees (https://jeetsukumaran.github.io/DendroPy/programs/sumtrees.html)
-#### Visualisation: 
-VMD (or Pymol) for structures and simulations 
-https://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=VMD
-https://www.pymol.org/
-FigTree or iTOL for phylogenies
-http://tree.bio.ed.ac.uk/software/figtree/
-https://itol.embl.de/
+#### Additional requirements: 
+Python3 with the following packages: 
+
+NumPy (https:/2/numpy.org), dendropy (https://pypi.org/project/DendroPy), Bio Python (https://biopython.org/docs/1.75/api/Bio.html), natsort (https://pypi.org/project/natsort)
+
 
 
 # Method
+## 1. Dataset selection
+### Identify a Suitable Dataset:
+The dataset should consist of **structures that are likely to share homology**. Consider using tools and databases such as:
 
-## 1. Create structural phylogeny
+Foldseek (https://search.foldseek.com/search , https://github.com/steineggerlab/foldseek), Structome (https://biosig.lab.uq.edu.au/structome_q/), SCOP (https://www.ebi.ac.uk/pdbe/scop/), CATH (https://www.cathdb.info/), InterPro (https://www.ebi.ac.uk/interpro/)
+
+### Evaluate Dataset Suitability:
+Ensure that the dataset lies within the "twilight zone" of sequence similarity, where traditional sequence-based phylogenetic methods may be unreliable. Therefore e.g. perform an all-against-all pairwise sequence comparisons. Visualize the sequence similarity network using tools such as: CLANS and MMseqs2
+
+:x: Well-connected network → **Use conventional sequence-based phylogenetics**.
+
+:heavy_check_mark: Poorly connected network → **Suitable for MD-phylogeny**.
+
+### Additional notes:
+Ensure the dataset meets the following criteria:
+- Structures should consist of single-chain files
+- Identify structures that contain multiple copies of the same motif or fold. This influences the analysis
+- Avoid structures that are too large (e.g., ribosomes, entire nucleosomes) as they are impractical for MD simulations. 
+- Ensure length homogeneity across structures
+
+### Structural comparison and topology maps:
+Once the dataset is prepared, perform pairwise structural comparisons to generate a distance matrix for phylogenetic analysis. Careful verification of structural alignments is essential to avoid misinterpretations in phylogenetic reconstruction. Ensure that:
+- Only relevant domains are considered to prevent noise in the distance matrix.
+- Homologous structures are correctly aligned and superimposed.
+
+While structures may appear similar in 3D, differences in topology may indicate they are unrelated. Checking topology ensures accurate structural comparisons for subsequent phylogenetic analysis.
+We've developed a script for a user-friendly application of Pro-origami ```easyproorigami.py```
+
+ ```
+  python3 easyproorigami.py <number_of_threats> <pdb-structure>
+  ```
+
+
+## 2. Create structural phylogeny
 
 - Folder and file setup: Create a main directory containing necessary scripts and a subdirectory specifically for PDB files.
 > [!IMPORTANT]
@@ -38,7 +76,7 @@ https://itol.embl.de/
 
 Then, molecular dynamics is used to generate alternative conformations, which can then be sampled randomly to build alternative trees for bootstrap support in phylogenetic analyses.
 
-## 2. MD simulation set-up
+## 3. MD simulation set-up
 MD setup prepares a molecular system for simulation, ensuring it is physically and realistically configured.
 In general, this requires: 
 1. **PDB File Preparation:** Clean the structure (remove non-standard residues, add missing atoms)
