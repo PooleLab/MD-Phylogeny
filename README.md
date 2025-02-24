@@ -60,7 +60,7 @@ While structures may appear similar in 3D, differences in topology may indicate 
 We've developed a script for a user-friendly application of Pro-origami ```easyproorigami.py```
 
  ```
-  python3 easyproorigami.py <number_of_threats> <pdb-structure>
+  python3 easyproorigami.py <pdb-structure>
   ```
 
 
@@ -68,7 +68,7 @@ We've developed a script for a user-friendly application of Pro-origami ```easyp
 
 - Folder and file setup: Create a main directory containing necessary scripts and a subdirectory specifically for PDB files.
 > [!IMPORTANT]
-> **PDB Naming Convention:** Each PDB file should be a single-chain structure with the format ```PDBID_chainID.pdb``` or ```PDBIDchainID.pdb``` (e.g., 1abc_A.pdb, 1abcA.pdb). This is critical for script compatibility.
+> **PDB Naming Convention:** Each PDB file should be a single-chain structure with the format ```PDBID_chainID.pdb``` or ```PDBIDchainID.pdb``` (e.g., 1abc_A.pdb, 1abcA.pdb). 
 - Create phylogeny: Run the GesamtTree.py script on the specified folder to generate a structural phylogeny based on the PDB files
   ```
   python GesamtTree.py <FolderName>
