@@ -1,4 +1,3 @@
-#!/home/proteinmechanic/local/anaconda3/envs/foldseek/bin/python
 import os, glob, subprocess, sys
 import numpy as np
 from natsort import natsorted
