@@ -21,7 +21,7 @@ coulombtype             = PME
 rcoulomb                = 1.2
 ;
 tcoupl                  = Nose-Hoover
-tc_grps                 = SOLU SOLV
+tc_grps                 = Protein non-Protein
 tau_t                   = 1.0 1.0
 ref_t                   = 303.15 303.15
 nhchainlength           = 1
@@ -31,7 +31,7 @@ constraint_algorithm    = LINCS
 ;
 nstcomm                 = 100
 comm_mode               = linear
-comm_grps               = SOLU SOLV
+comm_grps               = Protein non-Protein
 ;
 gen-vel                 = yes
 gen-temp                = 303.15

@@ -1,6 +1,6 @@
 integrator              = md
 dt                      = 0.002
-nsteps                  = 50000000
+nsteps     				= 2500000   ; 2 * 2500000 = 5 ns
 nstxout-compressed      = 5000
 nstxout                 = 0
 nstvout                 = 0
@@ -20,7 +20,7 @@ rcoulomb                = 1.2
 coulombtype             = PME
 ;
 tcoupl                  = Nose-Hoover
-tc_grps                 = SOLU SOLV
+tc_grps                 = Protein non-Protein
 tau_t                   = 1.0 1.0
 ref_t                   = 303.15 303.15
 nhchainlength           = 1
@@ -37,5 +37,5 @@ continuation            = yes
 ;
 nstcomm                 = 100
 comm_mode               = linear
-comm_grps               = SOLU SOLV
+comm_grps               = Protein non-Protein
 ;
