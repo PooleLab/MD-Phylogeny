@@ -1,3 +1,4 @@
+#!/usr/bin/python 
 import os, glob, subprocess, sys
 import numpy as np
 from natsort import natsorted
