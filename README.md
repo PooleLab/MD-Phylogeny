@@ -1,7 +1,8 @@
   # MD-Phylogeny
 MD-Phylogeny constructs structural phylogenies and provides statistical confidence through molecular dynamics (MD) simulations.
 
-## What does the method do, and how? 
+## Publication
+Read about this method: 
 
 ## System Requirements 
 Operating system: Ideally, UNIX or Mac (not tested on Mac, yet). If you are using Windows, you can use the Windows Subsystem for Linux (WSL/WSL2), but be aware of possible difficulties. 
@@ -98,45 +99,20 @@ These steps can be done:
 > [!IMPORTANT]
 > CHARMM-GUI requires an active account for input generation. You need to set this up before using the CHARMM GUI Solution Builder.
 > 
-1. Setup Steps:
-  - After logging in, navigate to Input Generator > Solution Builder. Solution Builder generates input files for molecular dynamics simulations, allowing you to either solvate your molecule or create a standalone water box for other uses (Alternatively, select a different builder based on the protein type).
-  - Load Protein:
-    - Option 1: Upload a specific PDB file.
-    - Option 2: Enter the PDB ID directly.
-  - Model/Chain Selection Option: Select the desired protein chain, then proceed to configure the settings.
-3. Configuration Options: 
-  - PDB Manipulation Options: Customize manipulation options for the structure based on experimental needs, such as removing certain residues or modifying the structure, if required. Click Next Step to apply the settings. After the calculation, use the CHARMM-GUI viewer to confirm that the desired modifications to the protein structure have been applied accurately before proceeding to the next configuration.
-  - Water Box Configuration and ions: Configure the water box size and type to solvate the protein. Add ions to achieve wanted physiological conditions (Note: we’ve used the distance placing method and chosen 10 A edge distance and added NaCl ions). Click Next Step to apply the settings. After the calculation, use the CHARMM-GUI viewer to confirm that the desired modifications to the protein structure have been applied accurately before proceeding to the next configuration.
-  - Boundary Conditions: Set the periodic boundary conditions (PBC) automatically or adjust manually according to simulation requirements. Click Next Step to apply the settings. After the calculation, use the CHARMM-GUI viewer to confirm that the desired modifications to the protein structure have been applied accurately before proceeding to the next configuration.
-  - Force Field Selection: Choose the desired force field. CHARMM36m is popular and recommended for protein systems. Ensure that selected force fields and solvent models are compatible. 
-  - Equilibration and Simulation Parameters:
-    - Select GROMACS as the output format.
-    - Set NVT Ensemble for equilibration and NPT Ensemble for dynamics. Specify the temperature of choice for simulations.
-    - Click Next Step to apply the settings. After the calculation, use the CHARMM-GUI viewer to confirm that the desired modifications to the protein structure have been applied accurately before proceeding to the next configuration.
-4. Download and Organize Input Files:
-  - Download the generated files download.tgz and save them in a directory named after the protein’s PDB ID.
-  - Upload to HPC: Transfer the folder to the HPC cluster and extract the files
 
-You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
+Follow the steps and adjust to your requirements, then download the files for simulation. You need  ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
 
 ### Option 2: Using scripts
 > [!CAUTION]
 > Scripts only work if the PDB files contain only standard protein residues, with no engineered amino acids, waters, ions, etc.
 
-
-1. PDB File Preparation: Manually clean the PDB file to ensure compatibility with the MD setup:
-  - Remove non-standard residues (engineered residues, water, ions, ligands, RNA/DNA,... as it can create errors when running gmx programs, especially if parameters are not available).
-  - Only keep the protein or protein chain of interest.
-2. Make the force field available: GROMACS has CHARMM27 as a default option. While this force field is old, it can be used. However, we recommend using the newer CHARMM36 or CHARMM36m versions. To make these available to GROMACS, they need to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and, once unzipped, the resulting folder should be kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; the standard installation location is /usr/share/gromacs/top). Alternatively, e.g. on an HPC, the force field folder can be placed in the working directory. 
+1. Make the force field available: GROMACS has CHARMM27 as a default option. While this force field is old, it can be used. However, we recommend using the newer CHARMM36 or CHARMM36m versions. To make these available to GROMACS, they need to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and, once unzipped, the resulting folder should be kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; the standard installation location is /usr/share/gromacs/top). Alternatively, e.g. on an HPC, the force field folder can be placed in the working directory. 
 It is recommended to try the simulation setup steps to see which number your desired force field has when listed by pdb2gmx; it has to be adjusted in the scripts.
-3. Run Simulation Setup: Use ```MD/sim_setup_slurm.py``` to configure system requirements, Slurm header, and other parameters based on the computational resources.
+2. Run Simulation Setup: Use ```MD/sim_setup_slurm.py``` to configure system requirements, Slurm header, and other parameters based on the computational resources.
 
 ### Option 3: Using command line
 Run the following commands in the command line to set a protein up. Check every step's output to ensure everything is set up correctly.
-If you are working in interactive mode on an HPC, note that you may have to first load the GROMACS module. Below is an example for an HPC using the modules package manager. If you are not working on an HPC, and the GROMACS binary is in your path, skip this first command.
-```
- module load GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid
-```
+
 THIS RUNS THE FILE CONVERSION FROM PDB TO GRO
 ```
 gmx pdb2gmx -f <protein>.pdb -o <protein>.gro -ignh
