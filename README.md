@@ -278,3 +278,77 @@ sumtrees -d0 -p -o OutputTree -t Referencetree/<ReferenceTree> Trajectories/Tria
     - ```OutputTree``` will contain the reference tree structure with bootstrap values annotated on each node.
     - Interpretation: Higher bootstrap values on a node in the reference tree suggest strong support for that relationship across bootstrap replicates, while lower values indicate less stability.
 
+
+# Tutorial 
+
+In the folder ```tutorial``` you find 5 ```.pdb``` structures of histone folds. 
+Take the time to have a look at the structures in VMD or Pymol. 
+
+CLANS
+Sequence alignment
+
+## Build a phylogeny: 
+```
+mkdir pdbs
+```
+Copy all pdbs in this folder
+```
+cp *.pdb pdbs/.
+```
+Build Phylogeny:
+```
+python3 Gesamt.py pdbs/
+```
+
+
+## Molecular dynamics simulation:
+ Setting up the MD simulation can be done on you local machine. 
+
+Navigate to the ```tutorial``` folder. Then run 
+```
+Python3 sim_setup.py
+```
+This creates a folder for each protein, places the pdb in that folder and a .sh script for the setup for this protein. 
+Run every ```_sim_setup.sh``` script in every folder. (This step can also already be run on an HPC. Copy the tutorial folder to an HPC and run the ```s0_sim_setup-slurm.py``` script. This script is designed for a slurm sceduler and the scripts uses GROMACS (module load GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid). Anything else would need adjustments of this and all following scripts. Adjust script (account, mem-per-cpu,.. e-mail address) and run)
+For example: 
+```
+cd 1p3m_A_H3/
+```
+```
+bash 1p3m_A_H3_sim_setup.sh
+```
+Repeat for the other folders. 
+Be aware that this may take some time. The last step can take 30-60 min depending on you mashine. 
+Check outcome: therefore, open VMD, ``` file```>```new molecule```>```browse``` select ```1p3m_A_H3_nvt_heat.gro``` and again and select ```1p3m_A_H3_nvt_heat.xtc```
+For the next step you need the last ```.xtc``` file that has been created plus the ```.gro``` ```*_nvt_heat.gro/.xtc```
+
+Then run Equilibration (We found best to do this on a HPC. So if you have access, then copy all folders and file there and continue with the equilibration scripts.)
+```
+pyhton3 s1_make_equilibration_scripts.py
+```
+This creates a script for the Equilibration in every protein folder. Run one script to see if errors occur. If not, you can use the next script to submit all at once.
+```
+python3 s2_make_equilibration_execute_script.py
+```
+Then run: 
+```
+bach execute_equilibration.sh
+```
+The files created are called ```_EQ```. You can check the equilibration again in VMD by loading the ```*.xtc``` and ```*.gro``` file for each protein. 
+Then the proteins are ready for simulation. Create simulation scripts by running: 
+```
+python3 s3_make_production_scripts.py
+```
+This creates ```_Prod.sh``` scripts in every protein folder. Run one single production run to check if there are errors. Then you can submit all other producton runs at the same time by running: 
+```
+python3 s4_make_production_execute_script.py
+```
+```
+bash execute_production.sh
+```
+These simulations are set to 5 ns (you can check this in the ```templates/production_template.mdp``` file. ```nsteps     = 2500000   ; 2 * 2500000 = 5 ns```)
+This is a very short simulation for this tutorial. For an actual analysis you would want to set this number up. We have found 100ns to work best. But we also recommend to try with one protein first and check the outcome.) 
+Wait for the simulations to finish. This may take 1-2 days. If you don't want to wait, we have provided all files the folder ```full_simulation_files```
+Be aware of the size of this folder (2.6 GB)
+
+
