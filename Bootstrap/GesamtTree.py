@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!python
 import os, glob, subprocess, sys
 import numpy as np
 from natsort import natsorted
@@ -18,7 +18,7 @@ def MakeNJTreeData():
     for i in _d_:
         for j in _d_:
             v = ""
-            v = subprocess.Popen('/home/proteinmechanic/local/CCP4/ccp4-8.0/bin/gesamt ' + i + ' ' + j + ' | grep "Q-score"', shell = True, stdout = subprocess.PIPE).stdout.read().decode()
+            v = subprocess.Popen('/opt/xtal/ccp4-8.0/bin/gesamt ' + i + ' ' + j + ' | grep "Q-score"', shell = True, stdout = subprocess.PIPE).stdout.read().decode()
             if len(v) > 0:
                 f.write('\t'.join([i.split('.')[0],j.split('.')[0],v.split('\n')[0].split()[2]]) + '\n')
             else:
