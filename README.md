@@ -4,6 +4,33 @@ MD-Phylogeny constructs structural phylogenies and provides statistical confiden
 ## Publication
 Read about this method: 
 
+
+## Table of content
+- [MD-Phylogeny](#md-phylogeny)
+  * [Publication](#publication)
+  * [System Requirements](#system-requirements)
+  * [Installations](#installations)
+      - [Visualisation of structures and simulations](#visualisation-of-structures-and-simulations)
+      - [Structural superposition and calculation of Qscore](#structural-superposition-and-calculation-of-qscore)
+      - [Visualisation of Phylogenies](#visualisation-of-phylogenies)
+      - [Summarization and annotation of phylogenies](#summarization-and-annotation-of-phylogenies)
+      - [Additional requirements](#additional-requirements)
+- [Method](#method)
+  * [1. Dataset selection](#1-dataset-selection)
+    + [Identify a Suitable Dataset](#identify-a-suitable-dataset)
+    + [Evaluate Dataset Suitability](#evaluate-dataset-suitability)
+    + [Additional notes](#additional-notes)
+    + [Structural comparison and topology maps](#structural-comparison-and-topology-maps)
+  * [2. Create structural phylogeny](#2-create-structural-phylogeny)
+  * [3. MD simulation set-up](#3-md-simulation-set-up)
+  * [4. Post-Simulation Processing](#4-post-simulation-processing)
+  * [5. Bootstrapping and Structural Phylogeny Analysis](#5-bootstrapping-and-structural-phylogeny-analysis)
+- [Tutorial](#tutorial)
+  * [Build a phylogeny](#build-a-phylogeny)
+  * [Molecular dynamics simulation](#molecular-dynamics-simulation)
+
+
+
 ## System Requirements 
 Operating system: Ideally, UNIX or Mac (not tested on Mac, yet). If you are using Windows, you can use the Windows Subsystem for Linux (WSL/WSL2), but be aware of possible difficulties. 
 For most preparatory and analytical steps it is ok to use laptop or desktop. But for molecular dynamics (MD) simulations an HPC is highly recommended. 
@@ -18,13 +45,13 @@ GROMACS (we have used GROMACS version GROMACS/2020.5-intel-2020a-cuda-11.0.2-hyb
 
 #### Visualisation of structures and simulations
 Visual Molecular Dynamics (VMD) (https://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=VMD) or Pymol (https://www.pymol.org/) to visualise structures and VMD to visualise simulation trajectories. 
-#### Structural superposition and calculation of Qscore:
+#### Structural superposition and calculation of Qscore
 Gesamt (from https://www.ccp4.ac.uk/html/gesamt.html)
-#### Visualisation of Phylogenies: 
+#### Visualisation of Phylogenies 
 FigTree (http://tree.bio.ed.ac.uk/software/figtree/) or iTOL (https://itol.embl.de/)
-#### Summarization and annotation of phylogenies: 
+#### Summarization and annotation of phylogenies 
 sumtrees (https://jeetsukumaran.github.io/DendroPy/programs/sumtrees.html)
-#### Additional requirements: 
+#### Additional requirements 
 Python3 with the following packages: 
 
 NumPy (https:/2/numpy.org), dendropy (https://pypi.org/project/DendroPy), Bio Python (https://biopython.org/docs/1.75/api/Bio.html), natsort (https://pypi.org/project/natsort)
@@ -33,26 +60,26 @@ NumPy (https:/2/numpy.org), dendropy (https://pypi.org/project/DendroPy), Bio Py
 
 # Method
 ## 1. Dataset selection
-### Identify a Suitable Dataset:
+### Identify a Suitable Dataset
 The dataset should consist of **structures that are likely to share homology**. Consider using tools and databases such as:
 
 Foldseek (https://search.foldseek.com/search , https://github.com/steineggerlab/foldseek), Structome (https://biosig.lab.uq.edu.au/structome_q/), SCOP (https://www.ebi.ac.uk/pdbe/scop/), CATH (https://www.cathdb.info/), InterPro (https://www.ebi.ac.uk/interpro/)
 
-### Evaluate Dataset Suitability:
+### Evaluate Dataset Suitability
 Ensure that the dataset lies within the "twilight zone" of sequence similarity, where traditional sequence-based phylogenetic methods may be unreliable. Therefore e.g. perform an all-against-all pairwise sequence comparisons. Visualize the sequence similarity network using tools such as: CLANS and MMseqs2
 
 :x: Well-connected network → **Use conventional sequence-based phylogenetics**.
 
 :heavy_check_mark: Poorly connected network → **Suitable for MD-phylogeny**.
 
-### Additional notes:
+### Additional notes
 Ensure the dataset meets the following criteria:
 - Structures should consist of single-chain files
 - Identify structures that contain multiple copies of the same motif or fold. This influences the analysis
 - Avoid structures that are too large (e.g., ribosomes, entire nucleosomes) as they are impractical for MD simulations. 
 - Ensure length homogeneity across structures
 
-### Structural comparison and topology maps:
+### Structural comparison and topology maps
 Once the dataset is prepared, perform pairwise structural comparisons to generate a distance matrix for phylogenetic analysis. Careful verification of structural alignments is essential to avoid misinterpretations in phylogenetic reconstruction. Ensure that:
 - Only relevant domains are considered to prevent noise in the distance matrix.
 - Homologous structures are correctly aligned and superimposed.
@@ -93,7 +120,9 @@ These steps can be done:
 - manually by using CHARMM GUI Website (https://www.charmm-gui.org/)
 - using command line/scripts
 
-### Option 1: Using CHARMM GUI Website (https://www.charmm-gui.org/) 
+### Option 1: Using CHARMM GUI Website 
+(https://www.charmm-gui.org/)
+
 (allows to visually check outputs and intermediate steps visually; very user-friendly interface and handling)
 
 > [!IMPORTANT]
@@ -287,7 +316,7 @@ Take the time to have a look at the structures in VMD or Pymol.
 CLANS
 Sequence alignment
 
-## Build a phylogeny: 
+## Build a phylogeny 
 ```
 mkdir pdbs
 ```
@@ -301,7 +330,7 @@ python3 Gesamt.py pdbs/
 ```
 
 
-## Molecular dynamics simulation:
+## Molecular dynamics simulation
  Setting up the MD simulation can be done on you local machine. 
 
 Navigate to the ```tutorial``` folder. Then run 
