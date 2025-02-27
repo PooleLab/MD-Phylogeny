@@ -1,13 +1,8 @@
   # MD-Phylogeny
 MD-Phylogeny constructs structural phylogenies and provides statistical confidence through molecular dynamics (MD) simulations.
 
-## Publication
-Read about this method: 
-
-
 ## Table of content
 - [MD-Phylogeny](#md-phylogeny)
-  * [Publication](#publication)
   * [System Requirements](#system-requirements)
   * [Installations](#installations)
       - [Visualisation of structures and simulations](#visualisation-of-structures-and-simulations)
@@ -26,8 +21,7 @@ Read about this method:
   * [4. Post-Simulation Processing](#4-post-simulation-processing)
   * [5. Bootstrapping and Structural Phylogeny Analysis](#5-bootstrapping-and-structural-phylogeny-analysis)
 - [Tutorial](#tutorial)
-  * [Build a phylogeny](#build-a-phylogeny)
-  * [Molecular dynamics simulation](#molecular-dynamics-simulation)
+
 
 
 
@@ -97,12 +91,10 @@ We've developed a script for a user-friendly application of Pro-origami ```easyp
 - Folder and file setup: Create a main directory containing necessary scripts and a subdirectory specifically for PDB files.
 > [!IMPORTANT]
 > **PDB Naming Convention:** Each PDB file should be a single-chain structure with the format ```PDBID_chainID.pdb``` or ```PDBIDchainID.pdb``` (e.g., 1abc_A.pdb, 1abcA.pdb). 
-- Create phylogeny: Run the GesamtTree.py script on the specified folder to generate a structural phylogeny based on the PDB files
+- Create phylogeny: Run the GesamtTree.py script on the specified folder that contains all ```.pdb``` files of the structures to generate a structural phylogeny
   ```
   python GesamtTree.py <FolderName>
   ```
-
-Then, molecular dynamics is used to generate alternative conformations, which can then be sampled randomly to build alternative trees for bootstrap support in phylogenetic analyses.
 
 ## 3. MD simulation set-up
 MD setup prepares a molecular system for simulation, ensuring it is physically and realistically configured.
@@ -125,19 +117,26 @@ These steps can be done:
 
 (allows to visually check outputs and intermediate steps visually; very user-friendly interface and handling)
 
-> [!IMPORTANT]
+> [!Note]
 > CHARMM-GUI requires an active account for input generation. You need to set this up before using the CHARMM GUI Solution Builder.
-> 
 
-Follow the steps and adjust to your requirements, then download the files for simulation. You need  ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
+Follow the steps and adjust to your requirements, then download the files for simulation. You need  ```<protein>.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. 
+> [!IMPORTANT]
+> Rename files according to the scripts in the next step or change file names in the script according to the obtained files.
 
 ### Option 2: Using scripts
-> [!CAUTION]
+> [!Note]
 > Scripts only work if the PDB files contain only standard protein residues, with no engineered amino acids, waters, ions, etc.
 
 1. Make the force field available: GROMACS has CHARMM27 as a default option. While this force field is old, it can be used. However, we recommend using the newer CHARMM36 or CHARMM36m versions. To make these available to GROMACS, they need to be downloaded from http://mackerell.umaryland.edu/charmm_ff.shtml#gromacs and, once unzipped, the resulting folder should be kept in the resulting force field folder of gromacs (it depends on where gromacs is installed; the standard installation location is /usr/share/gromacs/top). Alternatively, e.g. on an HPC, the force field folder can be placed in the working directory. 
 It is recommended to try the simulation setup steps to see which number your desired force field has when listed by pdb2gmx; it has to be adjusted in the scripts.
-2. Run Simulation Setup: Use ```MD/sim_setup_slurm.py``` to configure system requirements, Slurm header, and other parameters based on the computational resources.
+
+3. Run Simulation Setup and use:
+   - ```MD/s0_sim_setup_slurm.py``` on an HPC with Slurm scheduler. Adjust the Slurm header and other parameters based on the computational resources. Run this script in the same folder as you ```.pdb``` files. This will create a folder for each protein and places a ```<protein>_setup.sh``` script in each protein folder. Run each of the scripts. 
+   - ```MD/s0_sim_setup.py``` to run on a Laptop or Desktop PC. Run this script in the same folder as you ```.pdb``` files. This will create a folder for each protein and places a ```<protein>_setup.sh``` script in each protein folder. Run each of the scripts.
+  
+>[!Important]
+>You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
 
 ### Option 3: Using command line
 Run the following commands in the command line to set a protein up. Check every step's output to ensure everything is set up correctly.
@@ -199,37 +198,37 @@ gmx grompp -f charmm-inputs/charmm_nvt_heat.mdp -c <protein>_ions_minsd.gro -r <
 ```
 gmx mdrun -deffnm <protein>_nvt_heat
 ```
-You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
+>[!Important]
+>You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
 
 
 ## 3. MD Simulation Run 
-> [!IMPORTANT]
-> The scripts used in this step are adjusted to the set-up using CHARMM GUI website. Adjust paths and file names according to how you set them up.
-> You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```, ```equilibration.mdp``` and ```production.mdp``` file to do a MD simulation. There are templates for ```.mdp``` in ```MD/templates``` folder. Adjust to your liking, and make sure you adjust the names of the files themselves or adjust filenames in the scripts.
 
-1. Directory Organization: Create a unique directory for each protein and place the ```charmm-gui.tgz``` file inside (as mentioned in 3.2 point 4)
-2. Upload to HPC and extract files: Transfer the folder to the HPC cluster and extract the files. Unzip the CHARMM-GUI setup files in each folder (as mentioned in 3.2 point 4)
-The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
-3. Equilibration:
+>[!IMPORTANT]
+> The scripts provided for the following steps are designed to be used on an HPC with Slurm scheduler.
+
+>[!NOTE]
+>You need an ```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```, ```equilibration.mdp``` and ```production.mdp``` file to do a MD simulation. There are templates for ```.mdp``` in ```MD/templates``` folder. Adjust to your liking. The following MD-scripts use these templates. If you want to use other ```.mdp``` files, change the scripts accordingly  (```s1_make_equilibration_scripts.py``` and ```s3_make_production_scripts.py```)
+
+**1. Equilibration:**
   - Equilibrate the system to stabilize temperature, pressure, and density.
-  - Run ```s1_make_equilibration_scripts.py``` to create Slurm scripts in each GROMACS folder for equilibration.
-> [!NOTE]
-> Be aware of changing the directory in the script (line 5) and all SBATCH settings to liking and requirements. Also, change the names of files required for simulation. (line 33 (```minimization.mdp```, ```input.gro```, ```index.ndx```, ```topol.top```) and 38 (```equilibration.mdp```) )
+  - Run ```s1_make_equilibration_scripts.py``` to create Slurm scripts in each protein folder for equilibration.
   - Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in s2. The email sent when the equilibration started and ended will tell how long the equilibration took, maybe adjust the time as needed.
-  - Execute ```s2_make_equilibration_execute_script.py``` to submit all generated equilibration scripts.
-> [!NOTE]
-> Adjust the path in line 3 to your file locations
-  - Check the trajectories for these parameters for any abnormalities 
-4. Production Run:
+  - Execute ```s2_make_equilibration_execute_script.py``` to submit all generated equilibration scripts. Then run ```execute_equilibration.sh``` for bulk submission of all equilibrations.
+**2. Production Run:**
   - Perform the production simulation under stable, equilibrated conditions.
 (If you change dt to 0.002 ps, and you want your simulation to last for 100 ns, then nsteps is 100,000 ps / 0.002 ps = 50,000,000)
-  - The folder structure will be ```<proteinfoldername>/charmm*/gromacs```
   - Use ```s3_make_production_scripts.py``` to create production scripts for each protein.
-  - Submit all production runs with ```s4_make_production_execute_script.py```.
-  - Adjustments: Set the Slurm array size for efficient job management:
-      - ```#SBATCH --array=0-6%1```  Adjust '6' based on protein size or simulation length. For a protein from roughly  300 AA 6 has proven to be enough
+>[!IMPORTANT]
+> Adjust Slurm header in the script!
+
 > [!TIP]
 > Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in ```s3```. Check Log Files associated with each job ID to estimate run completion time and adjust time/array accordingly.
+
+  - Create a script to bulk submit all MD-simulations by running ```s4_make_production_execute_script.py```. Then run ```execute_production.sh``` to bulk submit all production runs. 
+  - Adjustments: Set the Slurm array size for efficient job management:
+      - ```#SBATCH --array=0-6%1```  Adjust '6' based on protein size or simulation length. For a protein from roughly  300 AA 6 has proven to be enough
+
 
 
 
@@ -310,74 +309,4 @@ sumtrees -d0 -p -o OutputTree -t Referencetree/<ReferenceTree> Trajectories/Tria
 
 # Tutorial 
 
-In the folder ```tutorial``` you find 5 ```.pdb``` structures of histone folds. 
-Take the time to have a look at the structures in VMD or Pymol. 
-
-CLANS
-Sequence alignment
-
-## Build a phylogeny 
-```
-mkdir pdbs
-```
-Copy all pdbs in this folder
-```
-cp *.pdb pdbs/.
-```
-Build Phylogeny:
-```
-python3 Gesamt.py pdbs/
-```
-
-
-## Molecular dynamics simulation
- Setting up the MD simulation can be done on you local machine. 
-
-Navigate to the ```tutorial``` folder. Then run 
-```
-Python3 sim_setup.py
-```
-This creates a folder for each protein, places the pdb in that folder and a .sh script for the setup for this protein. 
-Run every ```_sim_setup.sh``` script in every folder. (This step can also already be run on an HPC. Copy the tutorial folder to an HPC and run the ```s0_sim_setup-slurm.py``` script. This script is designed for a slurm sceduler and the scripts uses GROMACS (module load GROMACS/2020.5-intel-2020a-cuda-11.0.2-hybrid). Anything else would need adjustments of this and all following scripts. Adjust script (account, mem-per-cpu,.. e-mail address) and run)
-For example: 
-```
-cd 1p3m_A_H3/
-```
-```
-bash 1p3m_A_H3_sim_setup.sh
-```
-Repeat for the other folders. 
-Be aware that this may take some time. The last step can take 30-60 min depending on you mashine. 
-Check outcome: therefore, open VMD, ``` file```>```new molecule```>```browse``` select ```1p3m_A_H3_nvt_heat.gro``` and again and select ```1p3m_A_H3_nvt_heat.xtc```
-For the next step you need the last ```.xtc``` file that has been created plus the ```.gro``` ```*_nvt_heat.gro/.xtc```
-
-Then run Equilibration (We found best to do this on a HPC. So if you have access, then copy all folders and file there and continue with the equilibration scripts.)
-```
-pyhton3 s1_make_equilibration_scripts.py
-```
-This creates a script for the Equilibration in every protein folder. Run one script to see if errors occur. If not, you can use the next script to submit all at once.
-```
-python3 s2_make_equilibration_execute_script.py
-```
-Then run: 
-```
-bach execute_equilibration.sh
-```
-The files created are called ```_EQ```. You can check the equilibration again in VMD by loading the ```*.xtc``` and ```*.gro``` file for each protein. 
-Then the proteins are ready for simulation. Create simulation scripts by running: 
-```
-python3 s3_make_production_scripts.py
-```
-This creates ```_Prod.sh``` scripts in every protein folder. Run one single production run to check if there are errors. Then you can submit all other producton runs at the same time by running: 
-```
-python3 s4_make_production_execute_script.py
-```
-```
-bash execute_production.sh
-```
-These simulations are set to 5 ns (you can check this in the ```templates/production_template.mdp``` file. ```nsteps     = 2500000   ; 2 * 2500000 = 5 ns```)
-This is a very short simulation for this tutorial. For an actual analysis you would want to set this number up. We have found 100ns to work best. But we also recommend to try with one protein first and check the outcome.) 
-Wait for the simulations to finish. This may take 1-2 days. If you don't want to wait, we have provided all files the folder ```full_simulation_files```
-Be aware of the size of this folder (2.6 GB)
-
-
+Coming soon
