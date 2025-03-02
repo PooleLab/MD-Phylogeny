@@ -105,6 +105,7 @@ In general, this requires:
 4. **Solvation:** Add water molecules to mimic a realistic environment.
 5. **Ionisation:** Add ions (e.g., Na+, Cl⁻) for charge neutrality or the natural environment of the molecule.
 6. **Heating of the system:** Gradually raise system temperature to simulation conditions.
+7. **Equilibration:** to stabilize temperature, pressure, and density.
 
 For detailed information about each step, see ((https://link.springer.com/protocol/10.1007/978-1-4939-9869-2_17#Sec16))
 
@@ -198,11 +199,11 @@ gmx grompp -f charmm-inputs/charmm_nvt_heat.mdp -c <protein>_ions_minsd.gro -r <
 ```
 gmx mdrun -deffnm <protein>_nvt_heat
 ```
->[!Important]
->You then need the ```<protein>_nvt_heat.gro```, ```index.ndx``` and ```topol.top``` files to continue with the MD simulation run. (Rename them according to the scripts in the next step or change file names in the script according to your files.)
 
 
-## 3. MD Simulation Run 
+
+
+## 3. Equilibration and MD Simulation Run 
 
 >[!IMPORTANT]
 > The scripts provided for the following steps are designed to be used on an HPC with Slurm scheduler.
@@ -215,6 +216,7 @@ gmx mdrun -deffnm <protein>_nvt_heat
   - Run ```s1_make_equilibration_scripts.py``` to create Slurm scripts in each protein folder for equilibration.
   - Initial Testing: Test with one protein to identify potential issues before full batch submission. Change the project name and email address in s2. The email sent when the equilibration started and ended will tell how long the equilibration took, maybe adjust the time as needed.
   - Execute ```s2_make_equilibration_execute_script.py``` to submit all generated equilibration scripts. Then run ```execute_equilibration.sh``` for bulk submission of all equilibrations.
+
 **2. Production Run:**
   - Perform the production simulation under stable, equilibrated conditions.
 (If you change dt to 0.002 ps, and you want your simulation to last for 100 ns, then nsteps is 100,000 ps / 0.002 ps = 50,000,000)
@@ -234,7 +236,8 @@ gmx mdrun -deffnm <protein>_nvt_heat
 
 
 ## 4. Post-Simulation Processing
-
+This can be done either using the slurm script on an HPC ```s5_processing-slurm.py``` or on your local laptop or desktop PC using ```s5_processing.py```. Both of these scripts create ```execute_processing.sh``` which performs the processing on each protein. 
+Alternatively, you can run the following commands manually on each protein: 
 1. Trajectory Concatenation: Concatenate all trajectory segments into a single trajectory file for continuity. Use GROMACS to concatenate trajectory files for each protein, combining individual parts into a complete trajectory:
  ```
  gmx trjcat -f <name>.part*.xtc -o <name>.all.xtc
@@ -247,7 +250,7 @@ and fit the protein for final analysis:
 ``` 
 gmx trjconv -f <name>.prot.xtc -n index.ndx -o <name>.proc.xtc -s <name>.tpr -fit rot+trans
 ``` 
-3. Extract final structure: Extract a single representative structure from the trajectory at a specified time point (ideally the starting point) to view the simulation. Save gro file to view the simulation in VMD:
+3. Extract final structure: Extract a single representative structure from the trajectory at a specified time point (ideally the starting point) to view the simulation. Save ```.gro``` file to view the simulation in VMD:
 ```
 gmx trjconv -f <name>.prot.xtc -b 0 -e 0 -n index.ndx -o <name>.proc.gro -s <name>.tpr
 ``` 
