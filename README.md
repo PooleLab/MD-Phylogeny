@@ -1,4 +1,4 @@
-  # MD-Phylogeny
+# MD-Phylogeny
 MD-Phylogeny constructs structural phylogenies and provides statistical confidence through molecular dynamics (MD) simulations.
 
 ## Table of content
@@ -48,8 +48,7 @@ sumtrees (https://jeetsukumaran.github.io/DendroPy/programs/sumtrees.html)
 #### Additional requirements 
 Python3 with the following packages: 
 
-NumPy (https:/2/numpy.org), dendropy (https://pypi.org/project/DendroPy), Bio Python (https://biopython.org/docs/1.75/api/Bio.html), natsort (https://pypi.org/project/natsort)
-
+NumPy (https:/2/numpy.org), dendropy (https://pypi.org/project/DendroPy), Bio Python (https://biopython.org/docs/1.75/api/Bio.html)
 
 
 # Method
