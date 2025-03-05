@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 #pk
-import os, random, string
+import os
+import random
+import string
 import re
 import sys
 import subprocess
@@ -8,67 +10,14 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
 import shutil
 import tempfile
-import random
 import argparse
 
-version="0.0.16" # last updated on 2024-11-13 13:19:56
+version = "0.0.25" # last updated on 2025-02-24 09:36:12
 
 package_url = 'https://stivalaa.github.io/AcademicWebsite/software/proorigami-cde-package.tar.gz'
-master_dir = os.path.expanduser("~")
 package_tar = 'proorigami.tar.gz'
 package_dir = 'proorigami'
-
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-timeout=10
-
-def download_package(url, dest):
-    print(f"Downloading {url}...")
-    response = requests.get(url)
-    with open(dest, 'wb') as f:
-        f.write(response.content)
-    print(f"Downloaded {dest}.")
-
-def extract_package(tar_path, extract_to):
-    print(f"Extracting {tar_path}...")
-    os.makedirs(extract_to, exist_ok=True)
-    subprocess.run(['tar', 'zxf', tar_path, '-C', extract_to, '--strip-components=1'])
-    print(f"Extracted to {extract_to}.")
-
-def check_cde_exec(exec_path):
-    return os.path.isfile(exec_path) and os.access(exec_path, os.X_OK)
-
-def random_string(length=8):
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-
-def process_pdb(pdb_file, ptgraph_opts, force):
-    print(f"Processing {pdb_file}")
-    try:
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(execute_process, pdb_file, ptgraph_opts, force)
-            future.result(timeout=timeout)
-    except TimeoutError:
-        print(f"Processing {pdb_file} timed out. Retrying...")
-        try:
-            with ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(execute_process, pdb_file, ptgraph_opts, force)
-                future.result(timeout=timeout)
-        except TimeoutError:
-            print(f"Second attempt timed out for {pdb_file}.")
-        except Exception as e:
-            print(f"Second attempt failed for {pdb_file}: {e}")
-    except Exception as e:
-        print(f"First attempt failed for {pdb_file}: {e}")
-        print(f"Retrying {pdb_file}...")
-        try:
-            with ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(execute_process, pdb_file, ptgraph_opts, force)
-                future.result(timeout=timeout)
-        except TimeoutError:
-            print(f"Second attempt timed out for {pdb_file}.")
-        except Exception as e:
-            print(f"Second attempt failed for {pdb_file}: {e}")
+master_dir = os.path.expanduser("~")  # default; may be overridden via argparse
 
 def execute_process(pdb_file, ptgraph_opts, force):
     bn = os.path.basename(pdb_file)
@@ -138,27 +87,6 @@ def execute_process(pdb_file, ptgraph_opts, force):
 
     print(f"Finished processing {pdb_file}")
 
-#!/usr/bin/python3
-#pk
-import os
-import random
-import string
-import re
-import sys
-import subprocess
-import requests
-from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
-import shutil
-import tempfile
-import argparse
-
-version = "0.0.16"  # last updated on 2024-11-13 13:19:56
-
-package_url = 'https://stivalaa.github.io/AcademicWebsite/software/proorigami-cde-package.tar.gz'
-package_tar = 'proorigami.tar.gz'
-package_dir = 'proorigami'
-master_dir = os.path.expanduser("~")  # default; may be overridden via argparse
-timeout = 10
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -228,7 +156,7 @@ def main(pdb_files, num_threads, proorigami_dir, ptgraph_opts, force):
     subprocess.run(['chmod', '+x', cdeexec_bin_path])
 
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        futures = {executor.submit(process_pdb, pdb_file, ptgraph_opts, force): pdb_file for pdb_file in pdb_files}
+        futures = {executor.submit(execute_process, pdb_file, ptgraph_opts, force): pdb_file for pdb_file in pdb_files}
         for future in as_completed(futures):
             pdb_file = futures[future]
             try:
