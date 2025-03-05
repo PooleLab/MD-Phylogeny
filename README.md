@@ -84,6 +84,10 @@ We've developed a script for a user-friendly application of Pro-origami ```easyp
   python3 easyproorigami.py <pdb-structure>
   ```
 
+>[!Note]
+> '''easyproorigami.py''' is currently not running on Windows. 
+
+
 
 ## 2. Create structural phylogeny
 
